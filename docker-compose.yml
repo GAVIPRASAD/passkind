@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./passkind-backend
+    container_name: passkind-backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./passkind-backend/src:/app/src
+      - ./passkind-backend/pom.xml:/app/pom.xml
+      - maven_data:/root/.m2
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/appdb
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=pass
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - ENCRYPTION_KEY=mySecretEncryptionKey12345678901
+      - JWT_SECRET=myVeryLongSecretKeyForJWTTokenGenerationThatIsSecureEnoughForHS512Algorithm!!
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+      - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
+    depends_on:
+      - db
+    command: mvn spring-boot:run
+
+  frontend:
+    build: ./passkind-frontend
+    container_name: passkind-frontend
+    ports:
+      - "3000:5173"
+    volumes:
+      - ./passkind-frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      - POSTGRES_DB=appdb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
+  maven_data:

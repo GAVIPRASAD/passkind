@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Save, ArrowLeft, Plus, Trash } from "lucide-react";
+import { Save, ArrowLeft, Plus, Trash, Edit } from "lucide-react";
 import api from "../utils/api";
 import { ENDPOINTS } from "../constants/api";
+import PasswordGenerator from "../components/PasswordGenerator";
 
 const SecretForm = () => {
   const { id } = useParams();
@@ -23,6 +24,7 @@ const SecretForm = () => {
   const [tagInput, setTagInput] = useState("");
   const [metaKey, setMetaKey] = useState("");
   const [metaValue, setMetaValue] = useState("");
+  const [editingMetaKey, setEditingMetaKey] = useState(null);
 
   const { data: secret, isLoading } = useQuery({
     queryKey: ["secret", id],
@@ -47,7 +49,10 @@ const SecretForm = () => {
         email: secret.email || "",
         username: secret.username || "",
         tags: secret.tags || [],
-        metadata: secret.metadata || {},
+        metadata:
+          secret.metadata && typeof secret.metadata === "object"
+            ? secret.metadata
+            : {},
       });
     }
   }, [secret]);
@@ -101,10 +106,41 @@ const SecretForm = () => {
     setFormData({ ...formData, metadata: newMeta });
   };
 
+  const startEditMetadata = (key, value) => {
+    setEditingMetaKey(key);
+    setMetaKey(key);
+    setMetaValue(value);
+  };
+
+  const saveEditMetadata = () => {
+    if (metaKey.trim() && metaValue.trim()) {
+      const newMeta = { ...formData.metadata };
+      // If key changed, remove old key
+      if (editingMetaKey && editingMetaKey !== metaKey.trim()) {
+        delete newMeta[editingMetaKey];
+      }
+      newMeta[metaKey.trim()] = metaValue.trim();
+      setFormData({ ...formData, metadata: newMeta });
+      setMetaKey("");
+      setMetaValue("");
+      setEditingMetaKey(null);
+    }
+  };
+
+  const cancelEditMetadata = () => {
+    setMetaKey("");
+    setMetaValue("");
+    setEditingMetaKey(null);
+  };
+
   if (isEditMode && isLoading) return <div>Loading...</div>;
 
+  const handlePasswordGenerate = (password) => {
+    setFormData({ ...formData, value: password });
+  };
+
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-6 flex items-center">
         <button
           onClick={() => navigate("/secrets")}
@@ -117,166 +153,210 @@ const SecretForm = () => {
         </h1>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow"
-      >
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Name
-          </label>
-          <input
-            type="text"
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Form */}
+        <div className="lg:col-span-2">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow"
+          >
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Name
+              </label>
+              <input
+                type="text"
+                required
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Secret Value
-          </label>
-          <textarea
-            required
-            rows={4}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-            value={formData.value}
-            onChange={(e) =>
-              setFormData({ ...formData, value: e.target.value })
-            }
-          />
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Secret Value
+              </label>
+              <textarea
+                required
+                rows={4}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                value={formData.value}
+                onChange={(e) =>
+                  setFormData({ ...formData, value: e.target.value })
+                }
+              />
+            </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Email (Optional)
-            </label>
-            <input
-              type="email"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-            />
-          </div>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Email (Optional)
+                </label>
+                <input
+                  type="email"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Username (Optional)
-            </label>
-            <input
-              type="text"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-              value={formData.username}
-              onChange={(e) =>
-                setFormData({ ...formData, username: e.target.value })
-              }
-            />
-          </div>
-        </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Username (Optional)
+                </label>
+                <input
+                  type="text"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  value={formData.username}
+                  onChange={(e) =>
+                    setFormData({ ...formData, username: e.target.value })
+                  }
+                />
+              </div>
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Tags
-          </label>
-          <div className="mt-1 flex space-x-2">
-            <input
-              type="text"
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              placeholder="Add a tag"
-            />
-            <button
-              type="button"
-              onClick={addTag}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {formData.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
-              >
-                {tag}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Tags
+              </label>
+              <div className="mt-1 flex space-x-2">
+                <input
+                  type="text"
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  placeholder="Add a tag"
+                />
                 <button
                   type="button"
-                  onClick={() => removeTag(index)}
-                  className="ml-1 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200"
+                  onClick={addTag}
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  &times;
-                </button>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Metadata
-          </label>
-          <div className="mt-1 flex space-x-2">
-            <input
-              type="text"
-              className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-              value={metaKey}
-              onChange={(e) => setMetaKey(e.target.value)}
-              placeholder="Key"
-            />
-            <input
-              type="text"
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-              value={metaValue}
-              onChange={(e) => setMetaValue(e.target.value)}
-              placeholder="Value"
-            />
-            <button
-              type="button"
-              onClick={addMetadata}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="mt-2 space-y-2">
-            {Object.entries(formData.metadata).map(([key, value]) => (
-              <div
-                key={key}
-                className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-2 rounded"
-              >
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  <span className="font-semibold">{key}:</span> {value}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removeMetadata(key)}
-                  className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
-                >
-                  <Trash className="h-4 w-4" />
+                  <Plus className="h-4 w-4" />
                 </button>
               </div>
-            ))}
-          </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {formData.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => removeTag(index)}
+                      className="ml-1 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Metadata
+              </label>
+              <div className="mt-1 flex space-x-2">
+                <input
+                  type="text"
+                  className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  value={metaKey}
+                  onChange={(e) => setMetaKey(e.target.value)}
+                  placeholder="Key"
+                />
+                <input
+                  type="text"
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  value={metaValue}
+                  onChange={(e) => setMetaValue(e.target.value)}
+                  placeholder="Value"
+                />
+                {editingMetaKey ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={saveEditMetadata}
+                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
+                      <Save className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelEditMetadata}
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"
+                    >
+                      ×
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={addMetadata}
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <div className="mt-2 space-y-2">
+                {Object.entries(formData.metadata).map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-2 rounded"
+                  >
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      <span className="font-semibold">{key}:</span> {value}
+                    </span>
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => startEditMetadata(key, value)}
+                        className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200"
+                        title="Edit"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeMetadata(key)}
+                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+                        title="Delete"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={mutation.isPending}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                {mutation.isPending ? "Saving..." : "Save Secret"}
+              </button>
+            </div>
+          </form>
         </div>
 
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={mutation.isPending}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-          >
-            <Save className="mr-2 h-4 w-4" />
-            {mutation.isPending ? "Saving..." : "Save Secret"}
-          </button>
+        {/* Right Column: Password Generator */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-6">
+            <PasswordGenerator onGenerate={handlePasswordGenerate} />
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

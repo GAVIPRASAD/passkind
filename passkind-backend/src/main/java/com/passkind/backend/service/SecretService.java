@@ -89,12 +89,10 @@ public class SecretService {
         if (value != null && !value.isEmpty()) {
             secret.setEncryptedValue(encryptionService.encrypt(value));
         }
-        if (metadata != null) {
-            secret.setMetadata(metadata);
-        }
-        if (tags != null) {
-            secret.setTags(tags);
-        }
+        // Always update metadata when provided (even if empty map)
+        secret.setMetadata(metadata != null ? metadata : secret.getMetadata());
+        // Always update tags when provided (even if empty list)
+        secret.setTags(tags != null ? tags : secret.getTags());
         if (email != null) {
             secret.setEmail(email);
         }

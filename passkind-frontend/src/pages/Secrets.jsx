@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, Eye, EyeOff, Edit, Copy } from "lucide-react";
+import { Plus, Search, Eye, EyeOff, Edit, Copy, Filter, X } from "lucide-react";
 import api from "../utils/api";
 import { ENDPOINTS } from "../constants/api";
 
 const Secrets = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [visibleSecrets, setVisibleSecrets] = useState({});
+  const [filterType, setFilterType] = useState(""); // "username" or "email"
+  const [filterValue, setFilterValue] = useState("");
 
   const {
     data: secrets,
@@ -41,13 +43,44 @@ const Secrets = () => {
     // Could add toast notification here
   };
 
-  const filteredSecrets = secrets?.filter(
-    (secret) =>
-      secret.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      secret.tags.some((tag) =>
-        tag.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-  );
+  // Get unique usernames and emails for filter options
+  const uniqueUsernames = [
+    ...new Set(secrets?.map((s) => s.username).filter(Boolean)),
+  ];
+  const uniqueEmails = [
+    ...new Set(secrets?.map((s) => s.email).filter(Boolean)),
+  ];
+
+  const filteredSecrets = secrets
+    ?.filter((secret) => {
+      // Apply search filter
+      const matchesSearch =
+        !searchTerm ||
+        secret.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (secret.tags &&
+          secret.tags.some((tag) =>
+            tag.toLowerCase().includes(searchTerm.toLowerCase())
+          )) ||
+        (secret.email &&
+          secret.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (secret.username &&
+          secret.username.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      // Apply type filter
+      const matchesFilter =
+        !filterType ||
+        !filterValue ||
+        (filterType === "username" && secret.username === filterValue) ||
+        (filterType === "email" && secret.email === filterValue);
+
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => {
+      // Sort by updatedAt in descending order (most recent first)
+      const dateA = new Date(a.updatedAt || a.createdAt);
+      const dateB = new Date(b.updatedAt || b.createdAt);
+      return dateB - dateA;
+    });
 
   if (isLoading)
     return <div className="text-center py-10">Loading secrets...</div>;
@@ -73,17 +106,72 @@ const Secrets = () => {
         </Link>
       </div>
 
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-gray-400" />
+      {/* Search and Filter */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Search */}
+        <div className="relative md:col-span-2">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+            placeholder="Search secrets..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
-        <input
-          type="text"
-          className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-          placeholder="Search secrets..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+
+        {/* Filter */}
+        <div className="flex gap-2">
+          <select
+            value={filterType}
+            onChange={(e) => {
+              setFilterType(e.target.value);
+              setFilterValue("");
+            }}
+            className="block w-1/2 px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+          >
+            <option value="">All</option>
+            <option value="username">Username</option>
+            <option value="email">Email</option>
+          </select>
+
+          {filterType && (
+            <div className="relative flex-1">
+              <select
+                value={filterValue}
+                onChange={(e) => setFilterValue(e.target.value)}
+                className="block w-full px-3 py-2 pr-8 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+              >
+                <option value="">Select {filterType}</option>
+                {filterType === "username" &&
+                  uniqueUsernames.map((username) => (
+                    <option key={username} value={username}>
+                      {username}
+                    </option>
+                  ))}
+                {filterType === "email" &&
+                  uniqueEmails.map((email) => (
+                    <option key={email} value={email}>
+                      {email}
+                    </option>
+                  ))}
+              </select>
+              {filterValue && (
+                <button
+                  onClick={() => {
+                    setFilterType("");
+                    setFilterValue("");
+                  }}
+                  className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

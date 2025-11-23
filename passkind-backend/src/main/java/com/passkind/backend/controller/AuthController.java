@@ -18,7 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,62 +33,13 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
     private final OTPService otpService;
     private final UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        java.util.Optional<User> existingUserByEmail = userRepository.findByEmail(request.getEmail());
-
-        if (existingUserByEmail.isPresent()) {
-            User user = existingUserByEmail.get();
-            if (user.getIsEmailVerified()) {
-                throw new BadRequestException("Email already exists");
-            }
-            // User exists but not verified. Allow re-registration (update).
-
-            // Check if username is taken by a DIFFERENT user
-            java.util.Optional<User> existingUserByUsername = userRepository.findByUsername(request.getUsername());
-            if (existingUserByUsername.isPresent() && !existingUserByUsername.get().getId().equals(user.getId())) {
-                throw new BadRequestException("Username already exists");
-            }
-
-            // Update user details
-            user.setUsername(request.getUsername());
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-            user.setPhoneNumber(request.getPhoneNumber());
-            userRepository.save(user);
-
-            // Send OTP
-            try {
-                otpService.generateOTP(request.getEmail());
-            } catch (Exception e) {
-                throw new BadRequestException("Failed to send OTP: " + e.getMessage());
-            }
-            return ResponseEntity.ok(
-                    Map.of("message", "User registered successfully. Please check your email for verification code."));
-        }
-
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new BadRequestException("Username already exists");
-        }
-
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setEmail(request.getEmail());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setIsEmailVerified(false);
-        userRepository.save(user);
-
-        try {
-            otpService.generateOTP(request.getEmail());
-        } catch (Exception e) {
-            throw new BadRequestException("Failed to send OTP: " + e.getMessage());
-        }
-
+        userService.registerUser(request);
         return ResponseEntity
                 .ok(Map.of("message", "User registered successfully. Please check your email for verification code."));
     }
@@ -135,24 +86,24 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
         String identifier = request.getUsername();
-        User user;
+        java.util.Optional<User> userOpt = java.util.Optional.empty();
 
         if (identifier.contains("@")) {
-            user = userRepository.findByEmail(identifier)
-                    .orElseThrow(() -> new UnauthorizedException("Invalid username or password"));
+            userOpt = userRepository.findByEmail(identifier);
         } else if (identifier.matches("\\d+")) {
             try {
                 Long phoneNumber = Long.parseLong(identifier);
-                user = userRepository.findByPhoneNumber(phoneNumber)
-                        .orElseThrow(() -> new UnauthorizedException("Invalid username or password"));
+                userOpt = userRepository.findByPhoneNumber(phoneNumber);
             } catch (NumberFormatException e) {
-                user = userRepository.findByUsername(identifier)
-                        .orElseThrow(() -> new UnauthorizedException("Invalid username or password"));
+                // ignore
             }
-        } else {
-            user = userRepository.findByUsername(identifier)
-                    .orElseThrow(() -> new UnauthorizedException("Invalid username or password"));
         }
+
+        if (userOpt.isEmpty()) {
+            userOpt = userRepository.findByUsername(identifier);
+        }
+
+        User user = userOpt.orElseThrow(() -> new UnauthorizedException("Invalid username or password"));
 
         if (userService.isAccountLocked(user)) {
             throw new UnauthorizedException("Account is locked. Please try again later.");

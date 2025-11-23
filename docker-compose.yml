@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build: ./passkind-backend
@@ -11,6 +9,7 @@ services:
       - ./passkind-backend/pom.xml:/app/pom.xml
       - maven_data:/root/.m2
     environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}

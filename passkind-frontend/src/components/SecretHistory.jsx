@@ -70,7 +70,7 @@ const SecretHistory = ({ secretId }) => {
     return (
       <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6 h-full">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-          <Clock className="h-5 w-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+          <Clock className="h-5 w-5 mr-2 text-brand-600 dark:text-brand-400" />
           History
         </h3>
         <div className="text-center py-8">
@@ -87,7 +87,7 @@ const SecretHistory = ({ secretId }) => {
     <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden flex flex-col h-full max-h-[600px]">
       <div className="px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-          <Clock className="h-5 w-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+          <Clock className="h-5 w-5 mr-2 text-brand-600 dark:text-brand-400" />
           Audit Trail
         </h3>
       </div>
@@ -100,7 +100,7 @@ const SecretHistory = ({ secretId }) => {
           >
             {/* Timeline connector */}
             {eventIdx !== history.length - 1 && (
-              <div className="absolute left-6 top-16 bottom-0 w-0.5 bg-gradient-to-b from-indigo-200 to-transparent dark:from-indigo-800"></div>
+              <div className="absolute left-6 top-16 bottom-0 w-0.5 bg-gradient-to-b from-brand-200 to-transparent dark:from-brand-800"></div>
             )}
 
             <div className="flex gap-4">

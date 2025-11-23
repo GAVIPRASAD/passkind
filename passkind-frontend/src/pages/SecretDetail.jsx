@@ -85,7 +85,7 @@ const SecretDetail = () => {
         </div>
         <Link
           to={`/secrets/${id}/edit`}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-ocean hover:bg-gradient-ocean-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ocean-500"
         >
           <Edit className="mr-2 h-4 w-4" />
           Edit
@@ -102,7 +102,7 @@ const SecretDetail = () => {
                 <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-2 flex items-center">
                   <Lock className="h-5 w-5 mr-2 text-gray-400" /> Secret Value
                 </h3>
-                <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-900 rounded-md p-4 border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-md p-4 border border-gray-200 dark:border-gray-700">
                   <code className="text-sm text-gray-800 dark:text-gray-200 break-all font-mono">
                     {isVisible
                       ? decryptedValue
@@ -139,7 +139,7 @@ const SecretDetail = () => {
                   <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-2 flex items-center">
                     <Database className="h-5 w-5 mr-2 text-gray-400" /> Metadata
                   </h3>
-                  <div className="bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <dl className="divide-y divide-gray-200 dark:divide-gray-700">
                       {Object.entries(secret.metadata).map(([key, value]) => (
                         <div
@@ -193,7 +193,7 @@ const SecretDetail = () => {
                     {secret.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800 dark:bg-brand-900 dark:text-brand-200"
                       >
                         {tag}
                       </span>

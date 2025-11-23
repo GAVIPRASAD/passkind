@@ -158,16 +158,16 @@ const SecretForm = () => {
         <div className="lg:col-span-2">
           <form
             onSubmit={handleSubmit}
-            className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow"
+            className="space-y-6 bg-white dark:bg-[#0B0C10] p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800"
           >
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
                 Name
               </label>
               <input
                 type="text"
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                className="block w-full rounded-xl border border-gray-200 dark:border-none bg-gray-50 dark:bg-[#1F2833] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-cyan-500 p-2.5 transition-all"
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
@@ -176,13 +176,13 @@ const SecretForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
                 Secret Value
               </label>
-              <textarea
+              <input
+                type="text"
                 required
-                rows={4}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                className="block w-full rounded-xl border border-gray-200 dark:border-none bg-gray-50 dark:bg-[#1F2833] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-cyan-500 p-2.5 transition-all font-mono"
                 value={formData.value}
                 onChange={(e) =>
                   setFormData({ ...formData, value: e.target.value })
@@ -192,12 +192,12 @@ const SecretForm = () => {
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
                   Email (Optional)
                 </label>
                 <input
                   type="email"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  className="block w-full rounded-xl border border-gray-200 dark:border-none bg-gray-50 dark:bg-[#1F2833] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-cyan-500 p-2.5 transition-all"
                   value={formData.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
@@ -206,12 +206,12 @@ const SecretForm = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
                   Username (Optional)
                 </label>
                 <input
                   type="text"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  className="block w-full rounded-xl border border-gray-200 dark:border-none bg-gray-50 dark:bg-[#1F2833] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-cyan-500 p-2.5 transition-all"
                   value={formData.username}
                   onChange={(e) =>
                     setFormData({ ...formData, username: e.target.value })
@@ -221,13 +221,13 @@ const SecretForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
                 Tags
               </label>
               <div className="mt-1 flex space-x-2">
                 <input
                   type="text"
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  className="block w-full rounded-xl border border-gray-200 dark:border-none bg-gray-50 dark:bg-[#1F2833] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-cyan-500 p-2.5 transition-all"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   placeholder="Add a tag"
@@ -235,22 +235,22 @@ const SecretForm = () => {
                 <button
                   type="button"
                   onClick={addTag}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="inline-flex items-center justify-center w-14 rounded-xl border border-transparent shadow-sm text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-colors"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-6 w-6" />
                 </button>
               </div>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 {formData.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+                    className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-gray-100 dark:bg-[#1F2833] text-cyan-700 dark:text-cyan-400 border border-gray-200 dark:border-gray-700"
                   >
                     {tag}
                     <button
                       type="button"
                       onClick={() => removeTag(index)}
-                      className="ml-1 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200"
+                      className="ml-2 text-gray-400 hover:text-white"
                     >
                       &times;
                     </button>
@@ -260,20 +260,20 @@ const SecretForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
                 Metadata
               </label>
               <div className="mt-1 flex space-x-2">
                 <input
                   type="text"
-                  className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  className="block w-1/3 rounded-xl border border-gray-200 dark:border-none bg-gray-50 dark:bg-[#1F2833] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-cyan-500 p-2.5 transition-all"
                   value={metaKey}
                   onChange={(e) => setMetaKey(e.target.value)}
                   placeholder="Key"
                 />
                 <input
                   type="text"
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  className="block w-full rounded-xl border border-gray-200 dark:border-none bg-gray-50 dark:bg-[#1F2833] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-cyan-500 p-2.5 transition-all"
                   value={metaValue}
                   onChange={(e) => setMetaValue(e.target.value)}
                   placeholder="Value"
@@ -283,14 +283,14 @@ const SecretForm = () => {
                     <button
                       type="button"
                       onClick={saveEditMetadata}
-                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                      className="inline-flex items-center justify-center w-14 rounded-xl border border-transparent shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                     >
-                      <Save className="h-4 w-4" />
+                      <Save className="h-6 w-6" />
                     </button>
                     <button
                       type="button"
                       onClick={cancelEditMetadata}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"
+                      className="inline-flex items-center justify-center w-14 rounded-xl border border-gray-600 text-gray-400 bg-transparent hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
                     >
                       ×
                     </button>
@@ -299,26 +299,29 @@ const SecretForm = () => {
                   <button
                     type="button"
                     onClick={addMetadata}
-                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="inline-flex items-center justify-center w-14 rounded-xl border border-transparent shadow-sm text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-colors"
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-6 w-6" />
                   </button>
                 )}
               </div>
-              <div className="mt-2 space-y-2">
+              <div className="mt-4 space-y-2">
                 {Object.entries(formData.metadata).map(([key, value]) => (
                   <div
                     key={key}
-                    className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-2 rounded"
+                    className="flex justify-between items-center bg-gray-50 dark:bg-[#1F2833] p-3 rounded-xl border border-gray-200 dark:border-gray-700"
                   >
                     <span className="text-sm text-gray-700 dark:text-gray-300">
-                      <span className="font-semibold">{key}:</span> {value}
+                      <span className="font-semibold text-cyan-600 dark:text-cyan-400">
+                        {key}:
+                      </span>{" "}
+                      {value}
                     </span>
                     <div className="flex space-x-2">
                       <button
                         type="button"
                         onClick={() => startEditMetadata(key, value)}
-                        className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200"
+                        className="text-gray-400 hover:text-white transition-colors"
                         title="Edit"
                       >
                         <Edit className="h-4 w-4" />
@@ -326,7 +329,7 @@ const SecretForm = () => {
                       <button
                         type="button"
                         onClick={() => removeMetadata(key)}
-                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+                        className="text-gray-400 hover:text-red-400 transition-colors"
                         title="Delete"
                       >
                         <Trash className="h-4 w-4" />
@@ -337,13 +340,13 @@ const SecretForm = () => {
               </div>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-6">
               <button
                 type="submit"
                 disabled={mutation.isPending}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:opacity-50 transition-all"
               >
-                <Save className="mr-2 h-4 w-4" />
+                <Save className="mr-2 h-5 w-5" />
                 {mutation.isPending ? "Saving..." : "Save Secret"}
               </button>
             </div>

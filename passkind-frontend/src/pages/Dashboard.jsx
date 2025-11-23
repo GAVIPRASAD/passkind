@@ -92,7 +92,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="bg-black/50 rounded-lg p-3 flex items-center justify-between mb-4 font-mono text-sm">
+              <div className="bg-gray-900/50 rounded-lg p-3 flex items-center justify-between mb-4 font-mono text-sm">
                 <span className="truncate mr-2">
                   {revealed[secret.id] || "••••••••••••"}
                 </span>

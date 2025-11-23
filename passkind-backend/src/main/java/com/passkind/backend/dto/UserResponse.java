@@ -10,6 +10,7 @@ public class UserResponse {
     private String username;
     private String email;
     private Long phoneNumber;
+    private String fullName;
     private Boolean isEmailVerified;
     private LocalDateTime createdDate;
     private LocalDateTime lastLoginDate;

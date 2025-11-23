@@ -29,6 +29,9 @@ public class User {
     @Column(nullable = true)
     private Long phoneNumber;
 
+    @Column(nullable = true)
+    private String fullName;
+
     @CreationTimestamp
     private java.time.LocalDateTime createdDate;
 

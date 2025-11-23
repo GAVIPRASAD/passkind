@@ -30,7 +30,13 @@ public class OTPService {
         otp.setOtpCode(otpCode);
         otp.setExpiryTime(LocalDateTime.now().plusMinutes(EXPIRY_MINUTES));
         otpRepository.save(otp);
-        emailService.sendOtpEmail(email, otpCode);
+        // System.out.println("Generated OTP for " + email + ": " + otpCode);
+        try {
+            emailService.sendOtpEmail(email, otpCode);
+        } catch (Exception e) {
+            System.err.println("Failed to send OTP email: " + e.getMessage());
+            // Don't rethrow, allow registration to proceed
+        }
     }
 
     public boolean validateOTP(String email, String otpCode) {

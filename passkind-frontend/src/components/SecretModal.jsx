@@ -73,7 +73,7 @@ const SecretModal = ({ onClose, onSave, initialData = null }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-gray-900/80 flex items-center justify-center z-50 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -103,7 +103,7 @@ const SecretModal = ({ onClose, onSave, initialData = null }) => {
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
-              className="w-full bg-black border border-gray-700 rounded-xl p-3 focus:border-white outline-none transition-colors"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl p-3 focus:border-ocean-500 dark:focus:border-ocean-400 outline-none transition-colors"
             />
           </div>
 
@@ -119,7 +119,7 @@ const SecretModal = ({ onClose, onSave, initialData = null }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, value: e.target.value })
                 }
-                className="w-full bg-black border border-gray-700 rounded-xl p-3 pr-24 focus:border-white outline-none transition-colors font-mono"
+                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl p-3 pr-24 focus:border-ocean-500 dark:focus:border-ocean-400 outline-none transition-colors font-mono"
               />
               <button
                 type="button"
@@ -164,7 +164,7 @@ const SecretModal = ({ onClose, onSave, initialData = null }) => {
                             [opt]: !genOptions[opt],
                           })
                         }
-                        className="rounded bg-black border-gray-600"
+                        className="rounded bg-gray-900 border-gray-600"
                       />
                       {opt}
                     </label>
@@ -185,7 +185,7 @@ const SecretModal = ({ onClose, onSave, initialData = null }) => {
             <label className="block text-sm font-medium text-gray-400 mb-2">
               Tags (Press Enter)
             </label>
-            <div className="flex flex-wrap gap-2 bg-black border border-gray-700 rounded-xl p-2 min-h-[50px]">
+            <div className="flex flex-wrap gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl p-2 min-h-[50px]">
               {formData.tags.map((tag) => (
                 <span
                   key={tag}

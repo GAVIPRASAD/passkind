@@ -13,6 +13,7 @@ import Register from "./pages/Register";
 import Secrets from "./pages/Secrets";
 import SecretForm from "./pages/SecretForm";
 import SecretDetail from "./pages/SecretDetail";
+import Profile from "./pages/Profile";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import useAuthStore from "./store/authStore";
@@ -35,6 +36,7 @@ function App() {
                 <Route path="/secrets/new" element={<SecretForm />} />
                 <Route path="/secrets/:id" element={<SecretDetail />} />
                 <Route path="/secrets/:id/edit" element={<SecretForm />} />
+                <Route path="/profile" element={<Profile />} />
               </Route>
             </Route>
 

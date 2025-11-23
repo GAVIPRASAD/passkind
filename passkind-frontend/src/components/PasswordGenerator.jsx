@@ -55,22 +55,22 @@ const PasswordGenerator = ({ onGenerate }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6 border border-indigo-200 dark:border-gray-700">
+    <div className="bg-gradient-to-br from-brand-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6 border border-brand-200 dark:border-gray-700">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-        <RefreshCw className="h-5 w-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+        <RefreshCw className="h-5 w-5 mr-2 text-brand-600 dark:text-brand-400" />
         Password Generator
       </h3>
 
       {/* Generated Password Display */}
       {generatedPassword && (
-        <div className="mb-4 p-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-indigo-300 dark:border-indigo-600">
+        <div className="mb-4 p-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-brand-300 dark:border-brand-600">
           <div className="flex items-center justify-between">
             <code className="text-lg font-mono text-gray-900 dark:text-white break-all flex-1">
               {generatedPassword}
             </code>
             <button
               onClick={copyToClipboard}
-              className="ml-3 p-2 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+              className="ml-3 p-2 text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"
               title="Copy to clipboard"
             >
               {copied ? (
@@ -89,7 +89,7 @@ const PasswordGenerator = ({ onGenerate }) => {
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Password Length
           </label>
-          <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900 px-3 py-1 rounded-full">
+          <span className="text-sm font-semibold text-brand-600 dark:text-brand-400 bg-brand-100 dark:bg-brand-900 px-3 py-1 rounded-full">
             {length}
           </span>
         </div>
@@ -99,7 +99,7 @@ const PasswordGenerator = ({ onGenerate }) => {
           max="64"
           value={length}
           onChange={(e) => setLength(parseInt(e.target.value))}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-indigo-600"
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-brand-600"
         />
         <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
           <span>8</span>
@@ -114,48 +114,48 @@ const PasswordGenerator = ({ onGenerate }) => {
         </label>
 
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors">
+          <label className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
             <input
               type="checkbox"
               checked={options.uppercase}
               onChange={() => handleOptionChange("uppercase")}
-              className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              className="w-4 h-4 text-brand-600 bg-gray-100 border-gray-300 rounded focus:ring-ocean-500 dark:focus:ring-brand-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
             />
             <span className="text-sm text-gray-700 dark:text-gray-300">
               Uppercase (A-Z)
             </span>
           </label>
 
-          <label className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors">
+          <label className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
             <input
               type="checkbox"
               checked={options.lowercase}
               onChange={() => handleOptionChange("lowercase")}
-              className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              className="w-4 h-4 text-brand-600 bg-gray-100 border-gray-300 rounded focus:ring-ocean-500 dark:focus:ring-brand-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
             />
             <span className="text-sm text-gray-700 dark:text-gray-300">
               Lowercase (a-z)
             </span>
           </label>
 
-          <label className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors">
+          <label className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
             <input
               type="checkbox"
               checked={options.numbers}
               onChange={() => handleOptionChange("numbers")}
-              className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              className="w-4 h-4 text-brand-600 bg-gray-100 border-gray-300 rounded focus:ring-ocean-500 dark:focus:ring-brand-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
             />
             <span className="text-sm text-gray-700 dark:text-gray-300">
               Numbers (0-9)
             </span>
           </label>
 
-          <label className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors">
+          <label className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
             <input
               type="checkbox"
               checked={options.symbols}
               onChange={() => handleOptionChange("symbols")}
-              className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              className="w-4 h-4 text-brand-600 bg-gray-100 border-gray-300 rounded focus:ring-ocean-500 dark:focus:ring-brand-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
             />
             <span className="text-sm text-gray-700 dark:text-gray-300">
               Symbols (!@#$...)
@@ -167,7 +167,7 @@ const PasswordGenerator = ({ onGenerate }) => {
       {/* Generate Button */}
       <button
         onClick={generatePassword}
-        className="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:scale-105"
+        className="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all"
       >
         <RefreshCw className="mr-2 h-4 w-4" />
         Generate Password

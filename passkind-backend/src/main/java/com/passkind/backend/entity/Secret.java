@@ -17,11 +17,17 @@ import java.util.Map;
 @AllArgsConstructor
 public class Secret {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private java.util.UUID id;
 
     @Column(nullable = false)
-    private String title;
+    private String name;
+
+    @Column(nullable = true)
+    private String email;
+
+    @Column(nullable = true)
+    private String username;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String encryptedValue;
@@ -33,11 +39,9 @@ public class Secret {
     @ElementCollection
     private List<String> tags = new ArrayList<>();
 
-    @ElementCollection
-    @CollectionTable(name = "secret_metadata", joinColumns = @JoinColumn(name = "secret_id"))
-    @MapKeyColumn(name = "meta_key")
-    @Column(name = "meta_value")
-    private Map<String, String> metadata = new HashMap<>();
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Object> metadata = new HashMap<>();
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

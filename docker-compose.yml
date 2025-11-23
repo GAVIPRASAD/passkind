@@ -30,7 +30,7 @@ services:
     build: ./passkind-frontend
     container_name: passkind-frontend
     ports:
-      - "3000:5173"
+      - "5173:5173"
     volumes:
       - ./passkind-frontend:/app
       - node_modules_data:/app/node_modules

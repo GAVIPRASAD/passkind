@@ -20,5 +20,4 @@ Thumbs.db
 # Gemini artifacts (optional - remove if you want to commit them)
 .gemini/
 
-test.txt
-Prompts/
+prompt.txt

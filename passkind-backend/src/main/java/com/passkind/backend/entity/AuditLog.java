@@ -25,7 +25,7 @@ public class AuditLog {
     @Column(nullable = false)
     private String resourceType; // SECRET, USER
 
-    private Long resourceId;
+    private String resourceId;
 
     @Column(columnDefinition = "TEXT")
     private String details;

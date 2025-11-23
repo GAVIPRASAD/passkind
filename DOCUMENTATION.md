@@ -222,6 +222,29 @@ CREATE TABLE secret_shares (
 
 ---
 
+### Email Configuration (Gmail)
+
+To enable email OTP verification, you need to configure SMTP credentials. For Gmail, you must use an **App Password**:
+
+1.  **Go to Google Account**: https://myaccount.google.com/
+2.  **Security**: Select "Security" on the left panel.
+3.  **2-Step Verification**: Ensure it is turned **ON**.
+4.  **App Passwords**:
+    - Search for "App passwords" in the search bar at the top.
+    - Or go to: https://myaccount.google.com/apppasswords
+    - Create a new app password (name it "passKind").
+    - Copy the 16-character password (spaces don't matter).
+5.  **Update Configuration**:
+    - Open `docker-compose.yml`
+    - Update the environment variables under `backend`:
+      ```yaml
+      - MAIL_USERNAME=your-email@gmail.com
+      - MAIL_PASSWORD=your-16-char-app-password
+      ```
+    - Restart the backend: `docker-compose up -d backend`
+
+---
+
 ## Development Guide
 
 ### Hot Reload Setup

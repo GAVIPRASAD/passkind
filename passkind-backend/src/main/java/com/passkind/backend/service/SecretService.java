@@ -46,7 +46,7 @@ public class SecretService {
         secret.setTags(tags);
 
         Secret savedSecret = secretRepository.save(secret);
-        logAudit(username, "CREATE", "SECRET", savedSecret.getId(), "Created secret: " + title);
+        logAudit(username, "CREATE", "SECRET", String.valueOf(savedSecret.getId()), "Created secret: " + title);
 
         return savedSecret;
     }
@@ -67,7 +67,7 @@ public class SecretService {
             throw new UnauthorizedException("You do not have permission to access this secret");
         }
 
-        logAudit(username, "READ", "SECRET", secretId, "Accessed secret value");
+        logAudit(username, "READ", "SECRET", String.valueOf(secretId), "Accessed secret value");
         return encryptionService.decrypt(secret.getEncryptedValue());
     }
 
@@ -90,10 +90,10 @@ public class SecretService {
         share.setPermission(permission);
 
         // Save share logic would go here (need repository)
-        logAudit(username, "SHARE", "SECRET", secretId, "Shared with " + targetUsername);
+        logAudit(username, "SHARE", "SECRET", String.valueOf(secretId), "Shared with " + targetUsername);
     }
 
-    private void logAudit(String username, String action, String resourceType, Long resourceId, String details) {
+    private void logAudit(String username, String action, String resourceType, String resourceId, String details) {
         AuditLog log = new AuditLog();
         log.setUsername(username);
         log.setAction(action);

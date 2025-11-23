@@ -11,14 +11,18 @@ services:
       - ./passkind-backend/pom.xml:/app/pom.xml
       - maven_data:/root/.m2
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/appdb
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=pass
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - ENCRYPTION_KEY=mySecretEncryptionKey12345678901
-      - JWT_SECRET=myVeryLongSecretKeyForJWTTokenGenerationThatIsSecureEnoughForHS512Algorithm!!
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - JWT_SECRET=${JWT_SECRET}
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
       - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
     depends_on:
       - db
     command: mvn spring-boot:run
@@ -30,9 +34,9 @@ services:
       - "3000:5173"
     volumes:
       - ./passkind-frontend:/app
-      - /app/node_modules
+      - node_modules_data:/app/node_modules
     environment:
-      - VITE_API_URL=http://localhost:8080
+      - VITE_API_URL=${VITE_API_URL}
     depends_on:
       - backend
 
@@ -40,9 +44,9 @@ services:
     image: postgres:15
     container_name: postgres-db
     environment:
-      - POSTGRES_DB=appdb
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -59,3 +63,4 @@ services:
 volumes:
   postgres_data:
   maven_data:
+  node_modules_data:

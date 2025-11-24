@@ -177,7 +177,7 @@ const Profile = () => {
           transition={{ delay: 0.1 }}
           className="lg:col-span-1"
         >
-          <div className="bg-white dark:bg-[#0B0C10] shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 p-8">
+          <div className="bg-gradient-to-br from-white to-cyan-50 dark:from-[#161B22] dark:to-cyan-900/20 shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 p-8">
             {/* Avatar */}
             <div className="flex flex-col items-center">
               <motion.div
@@ -231,7 +231,7 @@ const Profile = () => {
           transition={{ delay: 0.2 }}
           className="lg:col-span-2"
         >
-          <div className="bg-white dark:bg-[#0B0C10] shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
+          <div className="bg-gradient-to-br from-white to-cyan-50 dark:from-[#161B22] dark:to-cyan-900/20 shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
             <div className="p-8">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                 Personal Information

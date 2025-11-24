@@ -195,7 +195,7 @@ const Navbar = () => {
                 transition={{ type: "spring", duration: 0.3 }}
                 className="relative z-10 inline-block align-bottom bg-white dark:bg-[#0B0C10] rounded-2xl text-left overflow-hidden shadow-2xl transform sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-gray-700"
               >
-                <div className="bg-white dark:bg-[#0B0C10] px-6 pt-6 pb-4">
+                <div className="bg-gradient-to-br from-white to-cyan-50 dark:from-[#161B22] px-6 pt-6 pb-4">
                   <div className="sm:flex sm:items-start">
                     {/* Icon */}
                     <motion.div

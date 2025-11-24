@@ -40,6 +40,6 @@ public class SecretHistory {
 
     @PrePersist
     protected void onCreate() {
-        modifiedAt = LocalDateTime.now();
+        modifiedAt = LocalDateTime.now(java.time.ZoneId.of("Asia/Kolkata"));
     }
 }

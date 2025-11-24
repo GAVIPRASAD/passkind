@@ -25,8 +25,19 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    // Handle authentication errors (401 Unauthorized, 403 Forbidden)
+    if (
+      error.response &&
+      (error.response.status === 401 || error.response.status === 403)
+    ) {
+      // Clear auth state
       useAuthStore.getState().logout();
+
+      // Redirect to login page
+      // Use window.location instead of navigate to ensure clean redirect
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }

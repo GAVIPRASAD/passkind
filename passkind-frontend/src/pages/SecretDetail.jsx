@@ -87,15 +87,45 @@ const SecretDetail = () => {
     navigator.clipboard.writeText(text);
   };
 
-  if (isLoading) return <div className="text-center py-10">Loading...</div>;
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
+      </div>
+    );
+
   if (fetchError)
     return (
-      <div className="text-center py-10 text-red-500">Error loading secret</div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="text-center py-10 px-6 bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/20 max-w-md">
+          <AlertTriangle className="h-12 w-12 mx-auto mb-3 text-red-500" />
+          <h3 className="text-lg font-medium text-red-900 dark:text-red-100">
+            Access Error
+          </h3>
+          <p className="text-red-700 dark:text-red-200/80 mt-2">
+            Unable to load this secret. Please try again later.
+          </p>
+        </div>
+      </div>
     );
-  if (!secret) return <div className="text-center py-10">Secret not found</div>;
+
+  if (!secret)
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center py-10 px-6 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/10 max-w-md">
+          <Lock className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+            Secret Not Found
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            This secret doesn't exist or you don't have access to it.
+          </p>
+        </div>
+      </div>
+    );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative pb-20">
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
@@ -136,153 +166,178 @@ const SecretDetail = () => {
         )}
       </AnimatePresence>
 
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 sm:gap-4"
+      >
+        <div className="flex items-center min-w-0 flex-1">
           <button
             onClick={() => navigate("/secrets")}
-            className="mr-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="mr-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-all flex-shrink-0"
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {secret.name}
-          </h1>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight truncate">
+              {secret.name}
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+              Secure credential details
+            </p>
+          </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-shrink-0">
           <button
             onClick={() => setIsDeleteModalOpen(true)}
-            className="inline-flex items-center px-4 py-2 border border-red-200 dark:border-red-900/30 text-sm font-medium rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+            className="inline-flex items-center px-4 py-2 border border-red-200 dark:border-red-900/30 text-sm font-medium rounded-xl text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete
           </button>
           <Link
             to={`/secrets/${id}/edit`}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-colors"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-lg shadow-cyan-500/20 text-white bg-cyan-600 hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all"
           >
             <Edit className="mr-2 h-4 w-4" />
             Edit
           </Link>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         {/* Left Column: Secret Details */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-[#161B22] shadow-sm rounded-2xl overflow-hidden border border-gray-200 dark:border-white/5">
-            <div className="px-4 py-5 sm:p-6 space-y-6">
-              {/* Secret Value Section */}
-              <div>
-                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-2 flex items-center">
-                  <Lock className="h-5 w-5 mr-2 text-gray-400" /> Secret Value
-                </h3>
-                <div className="flex items-center justify-between bg-gray-50 dark:bg-black/20 rounded-xl p-4 border border-gray-200 dark:border-white/5">
-                  <code className="text-sm text-gray-800 dark:text-gray-200 break-all font-mono">
-                    {isVisible
-                      ? decryptedValue
-                      : "••••••••••••••••••••••••••••"}
-                  </code>
-                  <div className="flex space-x-2 ml-4">
-                    <button
-                      onClick={toggleVisibility}
-                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-lg transition-colors"
-                      title={isVisible ? "Hide" : "Show"}
-                    >
-                      {isVisible ? (
-                        <EyeOff className="h-5 w-5" />
-                      ) : (
-                        <Eye className="h-5 w-5" />
-                      )}
-                    </button>
-                    {isVisible && (
-                      <button
-                        onClick={() => copyToClipboard(decryptedValue)}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-lg transition-colors"
-                        title="Copy"
-                      >
-                        <Copy className="h-5 w-5" />
-                      </button>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="lg:col-span-3 space-y-6"
+        >
+          {/* Secret Value Section */}
+          <div className="bg-gradient-to-br from-white to-cyan-50 dark:from-[#161B22] dark:to-cyan-900/20 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-white/5">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <Lock className="h-5 w-5 mr-2 text-cyan-500" />
+              Secret Value
+            </h3>
+            <div className="bg-gray-50 dark:bg-black/20 rounded-xl p-4 border border-gray-200 dark:border-white/5">
+              <div className="flex items-center justify-between gap-4">
+                <code className="text-base text-cyan-600 dark:text-cyan-400 break-all font-mono flex-1">
+                  {isVisible ? decryptedValue : "••••••••••••••••••••••••••••"}
+                </code>
+                <div className="flex space-x-2 flex-shrink-0">
+                  <button
+                    onClick={toggleVisibility}
+                    className="p-2 bg-white dark:bg-white/5 rounded-lg text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 shadow-sm transition-all"
+                    title={isVisible ? "Hide" : "Show"}
+                  >
+                    {isVisible ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
                     )}
-                  </div>
+                  </button>
+                  {isVisible && (
+                    <button
+                      onClick={() => copyToClipboard(decryptedValue)}
+                      className="p-2 bg-white dark:bg-white/5 rounded-lg text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 shadow-sm transition-all"
+                      title="Copy"
+                    >
+                      <Copy className="h-5 w-5" />
+                    </button>
+                  )}
                 </div>
               </div>
+            </div>
+          </div>
 
-              {/* Metadata Section */}
-              {secret.metadata && Object.keys(secret.metadata).length > 0 && (
-                <div>
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-2 flex items-center">
-                    <Database className="h-5 w-5 mr-2 text-gray-400" /> Metadata
-                  </h3>
-                  <div className="bg-gray-50 dark:bg-black/20 rounded-xl border border-gray-200 dark:border-white/5 overflow-hidden">
-                    <dl className="divide-y divide-gray-200 dark:divide-white/5">
-                      {Object.entries(secret.metadata).map(([key, value]) => (
-                        <div
-                          key={key}
-                          className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-                        >
-                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                            {key}
-                          </dt>
-                          <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2">
-                            {String(value)}
-                          </dd>
-                        </div>
-                      ))}
-                    </dl>
-                  </div>
-                </div>
-              )}
-
-              {/* Info Grid */}
+          {/* Identity Details Section */}
+          {(secret.username || secret.email) && (
+            <div className="bg-gradient-to-br from-white to-cyan-50 dark:from-[#161B22] dark:to-cyan-900/20 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-white/5">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <User className="h-5 w-5 mr-2 text-cyan-500" />
+                Identity Details
+              </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {secret.username && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center mb-1">
-                      <User className="h-4 w-4 mr-1" /> Username
-                    </h4>
-                    <p className="text-gray-900 dark:text-white">
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                      Username
+                    </label>
+                    <p className="text-base text-gray-900 dark:text-white font-medium">
                       {secret.username}
                     </p>
                   </div>
                 )}
                 {secret.email && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center mb-1">
-                      <Mail className="h-4 w-4 mr-1" /> Email
-                    </h4>
-                    <p className="text-gray-900 dark:text-white">
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                      Email
+                    </label>
+                    <p className="text-base text-gray-900 dark:text-white font-medium">
                       {secret.email}
                     </p>
                   </div>
                 )}
               </div>
-
-              {/* Tags */}
-              {secret.tags && secret.tags.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center mb-2">
-                    <Tag className="h-4 w-4 mr-1" /> Tags
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {secret.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-900/50"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
-          </div>
-        </div>
+          )}
+
+          {/* Metadata Section */}
+          {secret.metadata && Object.keys(secret.metadata).length > 0 && (
+            <div className="bg-gradient-to-br from-white to-cyan-50 dark:from-[#161B22] dark:to-cyan-900/20 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-white/5">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <Database className="h-5 w-5 mr-2 text-cyan-500" />
+                Custom Metadata
+              </h3>
+              <div className="space-y-3">
+                {Object.entries(secret.metadata).map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="bg-gray-50 dark:bg-black/20 p-4 rounded-xl border border-gray-200 dark:border-white/5"
+                  >
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+                      {key}
+                    </label>
+                    <p className="text-sm text-gray-900 dark:text-white">
+                      {String(value)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tags Section */}
+          {secret.tags && secret.tags.length > 0 && (
+            <div className="bg-gradient-to-br from-white to-cyan-50 dark:from-[#161B22] dark:to-cyan-900/20 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-white/5">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <Tag className="h-5 w-5 mr-2 text-cyan-500" />
+                Tags
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {secret.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300 border border-cyan-100 dark:border-cyan-900/30"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </motion.div>
 
         {/* Right Column: History */}
-        <div className="lg:col-span-1">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="lg:col-span-2"
+        >
           <SecretHistory secretId={id} />
-        </div>
+        </motion.div>
       </div>
     </div>
   );

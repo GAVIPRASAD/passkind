@@ -77,11 +77,17 @@ public class SecretService {
         previousData.put("name", secret.getName());
         previousData.put("email", secret.getEmail());
         previousData.put("username", secret.getUsername());
+
+        // Decrypt the value before storing in history
+        try {
+            String decryptedValue = encryptionService.decrypt(secret.getEncryptedValue());
+            previousData.put("secretValue", decryptedValue);
+        } catch (Exception e) {
+            previousData.put("secretValue", "[Decryption failed]");
+        }
+
         previousData.put("tags", secret.getTags());
         previousData.put("metadata", secret.getMetadata());
-        // We don't store the full previous encrypted value in history JSON to keep it
-        // light, or we could.
-        // For now, let's store metadata changes.
 
         if (name != null && !name.isEmpty()) {
             secret.setName(name);
@@ -124,7 +130,7 @@ public class SecretService {
             throw new UnauthorizedException("You do not have permission to access this secret");
         }
 
-        logAudit(username, "READ", "SECRET", String.valueOf(secretId), "Accessed secret value");
+        // logAudit(username, "READ", "SECRET", String.valueOf(secretId), "Accessed secret value");
         return encryptionService.decrypt(secret.getEncryptedValue());
     }
 

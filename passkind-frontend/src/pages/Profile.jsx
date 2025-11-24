@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Save, ArrowLeft, User, Mail, Phone, Edit, X } from "lucide-react";
+import {
+  Save,
+  ArrowLeft,
+  User,
+  Mail,
+  Phone,
+  Edit,
+  X,
+  Check,
+  Calendar,
+  Shield,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
 import useAuthStore from "../store/authStore";
 
@@ -68,182 +80,312 @@ const Profile = () => {
     setIsEditing(false);
   };
 
+  // Get initials for avatar
+  const getInitials = () => {
+    if (user?.fullName) {
+      return user.fullName
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    return user?.username?.slice(0, 2).toUpperCase() || "U";
+  };
+
   if (isLoading) return <div className="text-center py-10">Loading...</div>;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8 flex items-center justify-between"
+      >
         <div className="flex items-center">
           <button
             onClick={() => navigate("/secrets")}
-            className="mr-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="mr-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Profile
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+            My Profile
           </h1>
         </div>
         {!isEditing && (
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setIsEditing(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-ocean hover:bg-gradient-ocean-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ocean-500"
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all"
           >
-            <Edit className="mr-2 h-4 w-4" />
+            <Edit className="mr-2 h-5 w-5" />
             Edit Profile
-          </button>
+          </motion.button>
         )}
-      </div>
+      </motion.div>
 
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-        <form
-          onSubmit={handleSubmit}
-          className="divide-y divide-gray-200 dark:divide-gray-700"
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Profile Card */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+          className="lg:col-span-1"
         >
-          <div className="px-4 py-5 sm:p-6 space-y-6">
-            {/* Username */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <User className="inline h-4 w-4 mr-1" />
-                Username
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) =>
-                    setFormData({ ...formData, username: e.target.value })
-                  }
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-ocean-500 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-                  required
-                />
-              ) : (
-                <p className="text-gray-900 dark:text-white">
-                  {user?.username}
-                </p>
-              )}
+          <div className="bg-white dark:bg-[#0B0C10] shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 p-8">
+            {/* Avatar */}
+            <div className="flex flex-col items-center">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="w-32 h-32 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white text-4xl font-bold shadow-lg mb-4"
+              >
+                {getInitials()}
+              </motion.div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                {user?.fullName || user?.username}
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
+                @{user?.username}
+              </p>
+
+              {/* Verification Badge */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.3, type: "spring" }}
+                className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
+                  user?.isEmailVerified
+                    ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                    : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800"
+                }`}
+              >
+                <Shield className="w-4 h-4 mr-1.5" />
+                {user?.isEmailVerified ? "Verified Account" : "Unverified"}
+              </motion.div>
             </div>
 
-            {/* Full Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Full Name
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={formData.fullName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, fullName: e.target.value })
-                  }
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-ocean-500 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-                />
-              ) : (
-                <p className="text-gray-900 dark:text-white">
-                  {user?.fullName || "Not set"}
-                </p>
-              )}
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <Mail className="inline h-4 w-4 mr-1" />
-                Email
-              </label>
-              {isEditing ? (
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-ocean-500 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-                  required
-                />
-              ) : (
-                <p className="text-gray-900 dark:text-white">{user?.email}</p>
-              )}
-            </div>
-
-            {/* Phone Number */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <Phone className="inline h-4 w-4 mr-1" />
-                Phone Number
-              </label>
-              {isEditing ? (
-                <input
-                  type="tel"
-                  value={formData.phoneNumber}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phoneNumber: e.target.value })
-                  }
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-ocean-500 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-                />
-              ) : (
-                <p className="text-gray-900 dark:text-white">
-                  {user?.phoneNumber || "Not set"}
-                </p>
-              )}
-            </div>
-
-            {/* Account Info */}
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Account Information
-              </h3>
-              <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">
-                    Email Verified
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900 dark:text-white">
-                    {user?.isEmailVerified ? (
-                      <span className="text-green-600 dark:text-green-400">
-                        ✓ Verified
-                      </span>
-                    ) : (
-                      <span className="text-red-600 dark:text-red-400">
-                        ✗ Not Verified
-                      </span>
-                    )}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">
-                    Account Created
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900 dark:text-white">
-                    {user?.createdDate &&
-                      new Date(user.createdDate).toLocaleDateString()}
-                  </dd>
-                </div>
-              </dl>
+            {/* Stats */}
+            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3">
+                <Calendar className="w-4 h-4 mr-2" />
+                Member since{" "}
+                {user?.createdDate &&
+                  new Date(user.createdDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    year: "numeric",
+                  })}
+              </div>
             </div>
           </div>
+        </motion.div>
 
-          {isEditing && (
-            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 sm:px-6 flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-950 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ocean-500"
-              >
-                <X className="mr-2 h-4 w-4" />
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={updateMutation.isPending}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-ocean hover:bg-gradient-ocean-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ocean-500 disabled:opacity-50"
-              >
-                <Save className="mr-2 h-4 w-4" />
-                {updateMutation.isPending ? "Saving..." : "Save Changes"}
-              </button>
+        {/* Information Card */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="lg:col-span-2"
+        >
+          <div className="bg-white dark:bg-[#0B0C10] shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
+            <div className="p-8">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+                Personal Information
+              </h3>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Username */}
+                <motion.div whileHover={{ scale: 1.01 }} className="group">
+                  <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                    <User className="w-4 h-4 mr-2 text-cyan-600 dark:text-cyan-400" />
+                    Username
+                  </label>
+                  <AnimatePresence mode="wait">
+                    {isEditing ? (
+                      <motion.input
+                        key="edit-username"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        type="text"
+                        value={formData.username}
+                        onChange={(e) =>
+                          setFormData({ ...formData, username: e.target.value })
+                        }
+                        className="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1F2833] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-cyan-500 focus:border-transparent p-3 transition-all"
+                        required
+                      />
+                    ) : (
+                      <motion.div
+                        key="view-username"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="flex items-center p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-[#1F2833] dark:to-[#1a2332] rounded-xl border border-gray-200 dark:border-gray-700 group-hover:border-cyan-500 dark:group-hover:border-cyan-500 transition-all"
+                      >
+                        <span className="text-base font-medium text-gray-900 dark:text-white">
+                          {user?.username}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+
+                {/* Full Name */}
+                <motion.div whileHover={{ scale: 1.01 }} className="group">
+                  <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                    <User className="w-4 h-4 mr-2 text-cyan-600 dark:text-cyan-400" />
+                    Full Name
+                  </label>
+                  <AnimatePresence mode="wait">
+                    {isEditing ? (
+                      <motion.input
+                        key="edit-fullname"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        type="text"
+                        value={formData.fullName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, fullName: e.target.value })
+                        }
+                        className="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1F2833] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-cyan-500 focus:border-transparent p-3 transition-all"
+                      />
+                    ) : (
+                      <motion.div
+                        key="view-fullname"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="flex items-center p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-[#1F2833] dark:to-[#1a2332] rounded-xl border border-gray-200 dark:border-gray-700 group-hover:border-cyan-500 dark:group-hover:border-cyan-500 transition-all"
+                      >
+                        <span className="text-base font-medium text-gray-900 dark:text-white">
+                          {user?.fullName || "Not set"}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+
+                {/* Email */}
+                <motion.div whileHover={{ scale: 1.01 }} className="group">
+                  <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                    <Mail className="w-4 h-4 mr-2 text-cyan-600 dark:text-cyan-400" />
+                    Email Address
+                  </label>
+                  <AnimatePresence mode="wait">
+                    {isEditing ? (
+                      <motion.input
+                        key="edit-email"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                        className="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1F2833] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-cyan-500 focus:border-transparent p-3 transition-all"
+                        required
+                      />
+                    ) : (
+                      <motion.div
+                        key="view-email"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-[#1F2833] dark:to-[#1a2332] rounded-xl border border-gray-200 dark:border-gray-700 group-hover:border-cyan-500 dark:group-hover:border-cyan-500 transition-all"
+                      >
+                        <span className="text-base font-medium text-gray-900 dark:text-white">
+                          {user?.email}
+                        </span>
+                        {user?.isEmailVerified && (
+                          <Check className="w-5 h-5 text-green-500" />
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+
+                {/* Phone */}
+                <motion.div whileHover={{ scale: 1.01 }} className="group">
+                  <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                    <Phone className="w-4 h-4 mr-2 text-cyan-600 dark:text-cyan-400" />
+                    Phone Number
+                  </label>
+                  <AnimatePresence mode="wait">
+                    {isEditing ? (
+                      <motion.input
+                        key="edit-phone"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        type="tel"
+                        value={formData.phoneNumber}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            phoneNumber: e.target.value,
+                          })
+                        }
+                        className="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1F2833] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-cyan-500 focus:border-transparent p-3 transition-all"
+                      />
+                    ) : (
+                      <motion.div
+                        key="view-phone"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="flex items-center p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-[#1F2833] dark:to-[#1a2332] rounded-xl border border-gray-200 dark:border-gray-700 group-hover:border-cyan-500 dark:group-hover:border-cyan-500 transition-all"
+                      >
+                        <span className="text-base font-medium text-gray-900 dark:text-white">
+                          {user?.phoneNumber || "Not set"}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+
+                {/* Action Buttons */}
+                <AnimatePresence>
+                  {isEditing && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-800"
+                    >
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        type="button"
+                        onClick={handleCancel}
+                        className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 shadow-sm text-base font-medium rounded-xl text-gray-700 dark:text-gray-300 bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all"
+                      >
+                        <X className="mr-2 h-5 w-5" />
+                        Cancel
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        type="submit"
+                        disabled={updateMutation.isPending}
+                        className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:opacity-50 transition-all"
+                      >
+                        <Save className="mr-2 h-5 w-5" />
+                        {updateMutation.isPending
+                          ? "Saving..."
+                          : "Save Changes"}
+                      </motion.button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </form>
             </div>
-          )}
-        </form>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

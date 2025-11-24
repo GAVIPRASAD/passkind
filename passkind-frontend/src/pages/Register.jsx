@@ -149,7 +149,10 @@ const Register = () => {
                 <User className="h-5 w-5 text-gray-400" />
               </div>
               <input
+                id="username"
+                name="username"
                 type="text"
+                autoComplete="username"
                 value={formData.username}
                 onChange={(e) =>
                   setFormData({ ...formData, username: e.target.value })
@@ -165,7 +168,10 @@ const Register = () => {
                 <Mail className="h-5 w-5 text-gray-400" />
               </div>
               <input
+                id="email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
@@ -181,7 +187,10 @@ const Register = () => {
                 <Phone className="h-5 w-5 text-gray-400" />
               </div>
               <input
-                type="text"
+                id="phoneNumber"
+                name="phoneNumber"
+                type="tel"
+                autoComplete="tel"
                 value={formData.phoneNumber}
                 onChange={(e) =>
                   setFormData({ ...formData, phoneNumber: e.target.value })
@@ -197,7 +206,10 @@ const Register = () => {
                 <Lock className="h-5 w-5 text-gray-400" />
               </div>
               <input
+                id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
                 value={formData.password}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })

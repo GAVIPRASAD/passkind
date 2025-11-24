@@ -290,20 +290,37 @@ const SecretDetail = () => {
                 <Database className="h-5 w-5 mr-2 text-cyan-500" />
                 Custom Metadata
               </h3>
-              <div className="space-y-3">
-                {Object.entries(secret.metadata).map(([key, value]) => (
-                  <div
-                    key={key}
-                    className="bg-gray-50 dark:bg-black/20 p-4 rounded-xl border border-gray-200 dark:border-white/5"
-                  >
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
-                      {key}
-                    </label>
-                    <p className="text-sm text-gray-900 dark:text-white">
-                      {String(value)}
-                    </p>
-                  </div>
-                ))}
+              <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-white/5">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-white/5">
+                  <thead className="bg-gray-50 dark:bg-black/20">
+                    <tr>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
+                        Key
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
+                        Value
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-transparent divide-y divide-gray-200 dark:divide-white/5">
+                    {Object.entries(secret.metadata).map(([key, value]) => (
+                      <tr key={key}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                          {key}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 break-all">
+                          {String(value)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

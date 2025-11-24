@@ -315,7 +315,7 @@ const Secrets = () => {
                       </Link>
                       <Link
                         to={`/secrets/${secret.id}/edit`}
-                        className="relative z-10 p-1 -mr-1 text-gray-400 dark:text-gray-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+                        className="relative z-10 p-1 -mr-1 text-gray-400 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
                         title="Edit Secret"
                       >
                         <Edit className="h-4 w-4" />
@@ -395,7 +395,7 @@ const Secrets = () => {
                       </div>
                       <Link
                         to={`/secrets/${secret.id}`}
-                        className="text-xs font-medium text-gray-500 hover:text-cyan-600 dark:hover:text-cyan-400 flex items-center transition-colors"
+                        className="text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 flex items-center transition-colors"
                       >
                         OPEN
                         <ChevronRight className="h-3 w-3 ml-0.5" />

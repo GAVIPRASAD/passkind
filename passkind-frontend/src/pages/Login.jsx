@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 
+import { getFriendlyErrorMessage } from "../utils/errorUtils";
+
 const Login = () => {
   const { theme, toggleTheme } = useTheme();
   const [username, setUsername] = useState("");
@@ -48,7 +50,7 @@ const Login = () => {
       navigate("/dashboard");
     } catch (err) {
       console.error("Login failed", err);
-      setError(err.response?.data?.message || "Invalid credentials");
+      setError(getFriendlyErrorMessage(err));
     } finally {
       setIsLoading(false);
     }

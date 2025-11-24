@@ -17,6 +17,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
 import useAuthStore from "../store/authStore";
 
+import { getFriendlyErrorMessage } from "../utils/errorUtils";
+
 const Profile = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -50,6 +52,8 @@ const Profile = () => {
     }
   }, [user]);
 
+  const [error, setError] = useState(null);
+
   const updateMutation = useMutation({
     mutationFn: async (data) => {
       const response = await api.put("/users/me", data);
@@ -60,6 +64,13 @@ const Profile = () => {
       // Update auth store with new user data
       login(data, useAuthStore.getState().token);
       setIsEditing(false);
+      setError(null);
+    },
+    onError: (err) => {
+      const message = getFriendlyErrorMessage(err);
+      setError(message);
+      // Auto dismiss only if it's not a critical/long error, or keep it longer
+      setTimeout(() => setError(null), 6000);
     },
   });
 
@@ -78,6 +89,7 @@ const Profile = () => {
       });
     }
     setIsEditing(false);
+    setError(null);
   };
 
   // Get initials for avatar
@@ -96,7 +108,37 @@ const Profile = () => {
   if (isLoading) return <div className="text-center py-10">Loading...</div>;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+      {/* Error Overlay */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4"
+          >
+            <div className="bg-red-500/90 backdrop-blur-md text-white p-4 rounded-xl shadow-2xl border border-red-400/50 flex items-start gap-3">
+              <div className="bg-white/20 p-1.5 rounded-full flex-shrink-0 mt-0.5">
+                <X className="h-4 w-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-sm mb-0.5">Update Failed</h4>
+                <p className="text-sm text-white/90 leading-relaxed break-words">
+                  {error}
+                </p>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="p-1 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0 -mr-1 -mt-1"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

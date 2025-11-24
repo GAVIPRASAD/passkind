@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Save, ArrowLeft, Plus, Trash, Edit } from "lucide-react";
+import {
+  Save,
+  ArrowLeft,
+  Plus,
+  Trash,
+  Edit,
+  AlertTriangle,
+  X,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
 import { ENDPOINTS } from "../constants/api";
 import PasswordGenerator from "../components/PasswordGenerator";
+import { getFriendlyErrorMessage } from "../utils/errorUtils";
 
 const SecretForm = () => {
   const { id } = useParams();
@@ -25,6 +35,7 @@ const SecretForm = () => {
   const [metaKey, setMetaKey] = useState("");
   const [metaValue, setMetaValue] = useState("");
   const [editingMetaKey, setEditingMetaKey] = useState(null);
+  const [error, setError] = useState(null);
 
   const { data: secret, isLoading } = useQuery({
     queryKey: ["secret", id],
@@ -68,6 +79,10 @@ const SecretForm = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(["secrets"]);
       navigate("/secrets");
+    },
+    onError: (err) => {
+      setError(getFriendlyErrorMessage(err));
+      setTimeout(() => setError(null), 5000);
     },
   });
 
@@ -140,7 +155,36 @@ const SecretForm = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      {/* Error Overlay */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4"
+          >
+            <div className="bg-red-500/90 backdrop-blur-md text-white p-4 rounded-xl shadow-2xl border border-red-400/50 flex items-start gap-3">
+              <div className="bg-white/20 p-1.5 rounded-full flex-shrink-0 mt-0.5">
+                <AlertTriangle className="h-4 w-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-sm mb-0.5">Error</h4>
+                <p className="text-sm text-white/90 leading-relaxed break-words">
+                  {error}
+                </p>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="p-1 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0 -mr-1 -mt-1"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="mb-6 flex items-center">
         <button
           onClick={() => navigate("/secrets")}

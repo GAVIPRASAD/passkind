@@ -19,6 +19,7 @@ import { ENDPOINTS } from "../constants/api";
 import useAuthStore from "../store/authStore";
 import { motion } from "framer-motion";
 import { useTheme } from "../context/ThemeContext";
+import { getFriendlyErrorMessage } from "../utils/errorUtils";
 
 const Register = () => {
   const { theme, toggleTheme } = useTheme();
@@ -45,7 +46,7 @@ const Register = () => {
       setError("");
     },
     onError: (err) => {
-      setError(err.response?.data?.message || "Registration failed");
+      setError(getFriendlyErrorMessage(err));
     },
   });
 
@@ -68,7 +69,7 @@ const Register = () => {
       }
     },
     onError: (err) => {
-      setError(err.response?.data?.message || "OTP verification failed");
+      setError(getFriendlyErrorMessage(err));
     },
   });
 

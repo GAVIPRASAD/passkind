@@ -12,14 +12,14 @@ const EmptySecretsState = () => {
         transition={{ duration: 0.5 }}
         className="relative mb-8"
       >
-        <div className="absolute inset-0 bg-ocean-100 dark:bg-ocean-900/30 rounded-full blur-2xl opacity-50 animate-pulse"></div>
-        <div className="relative bg-white dark:bg-gray-800 p-6 rounded-full shadow-xl border border-gray-100 dark:border-gray-700">
-          <Shield className="h-16 w-16 text-ocean-600 dark:text-ocean-400" />
+        <div className="absolute inset-0 bg-cyan-100 dark:bg-cyan-900/30 rounded-full blur-2xl opacity-50 animate-pulse"></div>
+        <div className="relative bg-white dark:bg-[#0B0C10] p-6 rounded-full shadow-xl border border-gray-100 dark:border-gray-800">
+          <Shield className="h-16 w-16 text-cyan-600 dark:text-cyan-400" />
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-            className="absolute -bottom-2 -right-2 bg-brand-500 text-white p-2 rounded-full shadow-lg"
+            className="absolute -bottom-2 -right-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white p-2 rounded-full shadow-lg"
           >
             <Lock className="h-6 w-6" />
           </motion.div>
@@ -39,7 +39,7 @@ const EmptySecretsState = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
-        className="max-w-md text-lg text-gray-600 dark:text-gray-300 mb-8"
+        className="max-w-md text-lg text-gray-600 dark:text-gray-400 mb-8"
       >
         You haven't added any secrets yet. Start by storing your passwords, API
         keys, or secure notes in our encrypted vault.
@@ -52,7 +52,7 @@ const EmptySecretsState = () => {
       >
         <Link
           to="/secrets/new"
-          className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full shadow-lg text-white bg-gradient-ocean hover:bg-gradient-ocean-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ocean-500 transform transition-all duration-200 hover:scale-105"
+          className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-xl shadow-lg shadow-cyan-500/20 text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transform transition-all duration-200 hover:scale-105"
         >
           <Plus className="mr-2 h-5 w-5" />
           Add Your First Secret

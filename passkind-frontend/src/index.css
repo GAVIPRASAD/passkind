@@ -33,8 +33,15 @@ body {
 }
 
 /* Dark mode background */
+/* Dark mode background */
 .dark body {
-  @apply bg-[#0B0C10] text-gray-100;
+  background: radial-gradient(
+    circle at 50% -20%,
+    #1f2937 0%,
+    #111827 40%,
+    #030712 100%
+  );
+  @apply text-gray-100 min-h-screen;
 }
 
 /* Animated Mesh Gradient Background */

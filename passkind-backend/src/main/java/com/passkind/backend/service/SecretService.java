@@ -129,6 +129,25 @@ public class SecretService {
     }
 
     @Transactional
+    public void deleteSecret(java.util.UUID secretId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Secret secret = secretRepository.findById(secretId)
+                .orElseThrow(() -> new ResourceNotFoundException("Secret not found with id: " + secretId));
+
+        if (!secret.getOwner().getUsername().equals(username)) {
+            throw new UnauthorizedException("You do not have permission to delete this secret");
+        }
+
+        // Delete history first to avoid foreign key constraint violation
+        List<com.passkind.backend.entity.SecretHistory> history = secretHistoryRepository
+                .findBySecretOrderByModifiedAtDesc(secret);
+        secretHistoryRepository.deleteAll(history);
+
+        secretRepository.delete(secret);
+        logAudit(username, "DELETE", "SECRET", String.valueOf(secretId), "Deleted secret: " + secret.getName());
+    }
+
+    @Transactional
     public void shareSecret(java.util.UUID secretId, String targetUsername, String permission) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Secret secret = secretRepository.findById(secretId)

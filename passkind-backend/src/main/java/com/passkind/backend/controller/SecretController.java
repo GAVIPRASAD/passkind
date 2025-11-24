@@ -34,6 +34,12 @@ public class SecretController {
         return ResponseEntity.ok(mapToResponse(secret));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSecret(@PathVariable java.util.UUID id) {
+        secretService.deleteSecret(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping
     public ResponseEntity<List<SecretResponse>> getSecrets() {
         List<Secret> secrets = secretService.getMySecrets();

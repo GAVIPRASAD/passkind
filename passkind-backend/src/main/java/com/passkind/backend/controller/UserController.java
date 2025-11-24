@@ -54,6 +54,7 @@ public class UserController {
         response.setIsEmailVerified(user.getIsEmailVerified());
         response.setCreatedDate(user.getCreatedDate());
         response.setLastLoginDate(user.getLastLoginDate());
+        response.setPreferences(user.getPreferences());
         return response;
     }
 
@@ -76,6 +77,10 @@ public class UserController {
         }
         if (request.getFullName() != null) {
             user.setFullName(request.getFullName());
+        }
+        if (request.getPreferences() != null) {
+            // Preferences should be a JSON string
+            user.setPreferences(request.getPreferences());
         }
 
         User updatedUser = userRepository.save(user);
@@ -114,5 +119,6 @@ public class UserController {
         private String email;
         private Long phoneNumber;
         private String fullName;
+        private String preferences;
     }
 }

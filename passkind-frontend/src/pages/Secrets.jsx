@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import {
   Plus,
   Search,
@@ -20,13 +21,16 @@ import {
   List,
   MoreVertical,
   Calendar,
+  Star,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
 import { ENDPOINTS } from "../constants/api";
 import EmptySecretsState from "../components/EmptySecretsState";
+import VaultHealth from "../components/VaultHealth";
 
 const Secrets = () => {
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [visibleSecrets, setVisibleSecrets] = useState({});
   const [filterType, setFilterType] = useState(""); // "username" or "email"
@@ -100,11 +104,68 @@ const Secrets = () => {
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
-      // Sort by updatedAt in descending order (most recent first)
       const dateA = new Date(a.updatedAt || a.createdAt);
       const dateB = new Date(b.updatedAt || b.createdAt);
       return dateB - dateA;
     });
+
+  // Favorites Logic - Server-side
+  const { data: userData } = useQuery({
+    queryKey: ["user"],
+    queryFn: async () => {
+      const response = await api.get("/users/me");
+      return response.data;
+    },
+  });
+
+  // Parse preferences from JSON string
+  const preferences = userData?.preferences
+    ? typeof userData.preferences === "string"
+      ? JSON.parse(userData.preferences)
+      : userData.preferences
+    : {};
+
+  const favorites = preferences?.favorites || [];
+
+  const toggleFavorite = async (id, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      let newFavorites;
+      if (favorites.includes(id)) {
+        newFavorites = favorites.filter((favId) => favId !== id);
+      } else {
+        newFavorites = [...favorites, id];
+      }
+
+      // Create updated preferences object
+      const updatedPreferences = {
+        ...preferences,
+        favorites: newFavorites,
+      };
+
+      // Update server with JSON string
+      await api.put("/users/me", {
+        preferences: JSON.stringify(updatedPreferences),
+      });
+
+      // Invalidate user query to refetch
+      queryClient.invalidateQueries(["user"]);
+    } catch (err) {
+      console.error("Failed to update favorites", err);
+      toast.error("Failed to update favorites. Please try again.");
+    }
+  };
+
+  // Sort favorites to top
+  filteredSecrets?.sort((a, b) => {
+    const aFav = favorites.includes(a.id);
+    const bFav = favorites.includes(b.id);
+    if (aFav && !bFav) return -1;
+    if (!aFav && bFav) return 1;
+    return 0;
+  });
 
   const container = {
     hidden: { opacity: 0 },
@@ -161,6 +222,11 @@ const Secrets = () => {
           <span className="sm:hidden">New</span>
         </Link>
       </div>
+
+      {/* Vault Health Dashboard */}
+      {secrets && secrets.length > 0 && (
+        <VaultHealth secrets={secrets} variant="compact" />
+      )}
 
       {/* Search & Filter Bar */}
       {secrets && secrets.length > 0 && (
@@ -300,6 +366,20 @@ const Secrets = () => {
                           <Lock className="h-6 w-6 text-cyan-600 dark:text-cyan-500" />
                         </div>
                       </Link>
+                      <button
+                        onClick={(e) => toggleFavorite(secret.id, e)}
+                        className={`h-10 w-10 rounded-xl flex items-center justify-center backdrop-blur-sm border transition-all ${
+                          favorites.includes(secret.id)
+                            ? "bg-yellow-100 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-900/50 text-yellow-500"
+                            : "bg-white/50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-400 hover:text-yellow-500"
+                        }`}
+                      >
+                        <Star
+                          className={`h-5 w-5 ${
+                            favorites.includes(secret.id) ? "fill-current" : ""
+                          }`}
+                        />
+                      </button>
                     </div>
                   </div>
 
@@ -462,17 +542,35 @@ const Secrets = () => {
                         className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <Link
-                            to={`/secrets/${secret.id}`}
-                            className="flex items-center group/link"
-                          >
-                            <div className="h-8 w-8 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center text-cyan-600 dark:text-cyan-500 mr-3 group-hover/link:bg-cyan-100 dark:group-hover/link:bg-cyan-900/40 transition-colors">
-                              <Lock className="h-4 w-4" />
-                            </div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white group-hover/link:text-cyan-600 dark:group-hover/link:text-cyan-400 transition-colors">
-                              {secret.name}
-                            </div>
-                          </Link>
+                          <div className="flex items-center">
+                            <button
+                              onClick={(e) => toggleFavorite(secret.id, e)}
+                              className={`mr-3 focus:outline-none transition-colors ${
+                                favorites.includes(secret.id)
+                                  ? "text-yellow-500"
+                                  : "text-gray-300 dark:text-gray-600 hover:text-yellow-500"
+                              }`}
+                            >
+                              <Star
+                                className={`h-4 w-4 ${
+                                  favorites.includes(secret.id)
+                                    ? "fill-current"
+                                    : ""
+                                }`}
+                              />
+                            </button>
+                            <Link
+                              to={`/secrets/${secret.id}`}
+                              className="flex items-center group/link"
+                            >
+                              <div className="h-8 w-8 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center text-cyan-600 dark:text-cyan-500 mr-3 group-hover/link:bg-cyan-100 dark:group-hover/link:bg-cyan-900/40 transition-colors">
+                                <Lock className="h-4 w-4" />
+                              </div>
+                              <div className="text-sm font-medium text-gray-900 dark:text-white group-hover/link:text-cyan-600 dark:group-hover/link:text-cyan-400 transition-colors">
+                                {secret.name}
+                              </div>
+                            </Link>
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex flex-col">

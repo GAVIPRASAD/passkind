@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -23,6 +24,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
 import { ENDPOINTS } from "../constants/api";
 import PasswordGenerator from "../components/PasswordGenerator";
+import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
 import { getFriendlyErrorMessage } from "../utils/errorUtils";
 
 const SecretForm = () => {
@@ -86,8 +88,7 @@ const SecretForm = () => {
       navigate("/secrets");
     },
     onError: (err) => {
-      setError(getFriendlyErrorMessage(err));
-      setTimeout(() => setError(null), 5000);
+      toast.error(getFriendlyErrorMessage(err));
     },
   });
 
@@ -375,6 +376,7 @@ const SecretForm = () => {
                   </div>
                 </button>
               </div>
+              <PasswordStrengthMeter password={formData.value} />
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between">
                 <span>This value will be encrypted before being stored.</span>
                 <span

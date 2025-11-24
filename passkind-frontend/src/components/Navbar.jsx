@@ -19,7 +19,7 @@ const Navbar = ({ onToggleSidebar }) => {
         >
           <Menu className="h-6 w-6" />
         </button>
-        <Link to="/secrets" className="ml-4 flex items-center">
+        <Link to="/dashboard" className="ml-4 flex items-center">
           <Shield className="h-8 w-8 text-cyan-600" />
           <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
             PassKind

@@ -10,6 +10,8 @@ import {
   Home,
   Settings,
   AlertTriangle,
+  Star,
+  Lock,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import useAuthStore from "../store/authStore";
@@ -31,7 +33,9 @@ const Sidebar = ({ isOpen, onClose }) => {
   };
 
   const navItems = [
-    { name: "My Vault", path: "/", icon: Home },
+    { name: "Dashboard", path: "/dashboard", icon: Home },
+    { name: "Secrets", path: "/secrets", icon: Lock },
+    { name: "Favorites", path: "/favorites", icon: Star },
     { name: "Profile", path: "/profile", icon: User },
   ];
 
@@ -67,7 +71,11 @@ const Sidebar = ({ isOpen, onClose }) => {
       >
         {/* Header */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-white/10">
-          <Link to="/" className="flex items-center gap-2" onClick={onClose}>
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2"
+            onClick={onClose}
+          >
             <Shield className="h-8 w-8 text-cyan-600" />
             <span className="text-xl font-bold text-gray-900 dark:text-white">
               PassKind
@@ -173,7 +181,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-gray-900/80 backdrop-blur-md transition-opacity"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity z-50"
                 onClick={() => setShowLogoutDialog(false)}
               />
 
@@ -182,39 +190,53 @@ const Sidebar = ({ isOpen, onClose }) => {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 transition={{ type: "spring", duration: 0.3 }}
-                className="relative z-10 inline-block align-bottom bg-white dark:bg-[#0B0C10] rounded-2xl text-left overflow-hidden shadow-2xl transform sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-gray-700"
+                className="relative z-50 inline-block align-bottom bg-gradient-to-br from-white to-gray-50 dark:from-[#161B22] dark:to-[#0d1117] rounded-2xl text-left overflow-hidden shadow-2xl transform sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-200 dark:border-gray-700/50"
               >
-                <div className="bg-gradient-to-br from-white to-cyan-50 dark:from-[#161B22] px-6 pt-6 pb-4">
-                  <div className="sm:flex sm:items-start">
-                    <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/20 sm:mx-0 sm:h-10 sm:w-10">
-                      <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                {/* Header with gradient */}
+                <div className="relative px-6 pt-6 pb-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 shadow-lg shadow-red-500/30">
+                      <LogOut className="h-6 w-6 text-white" />
                     </div>
-                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                      <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
                         Sign Out
                       </h3>
-                      <div className="mt-2">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Are you sure you want to sign out?
-                        </p>
-                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Are you sure you want to sign out of your account?
+                      </p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 dark:bg-[#1F2833] px-6 py-4 sm:flex sm:flex-row-reverse gap-3">
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    Sign Out
-                  </button>
+
+                {/* Info card */}
+                <div className="px-6 pb-6">
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800/30 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-amber-800 dark:text-amber-200">
+                        You'll need to sign in again to access your vault.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="bg-gray-50 dark:bg-[#0d1117]/50 px-6 py-4 flex flex-col-reverse sm:flex-row gap-3">
                   <button
                     type="button"
                     onClick={() => setShowLogoutDialog(false)}
-                    className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-transparent text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    className="flex-1 inline-flex justify-center items-center rounded-xl border border-gray-300 dark:border-gray-600 px-4 py-2.5 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-colors"
                   >
                     Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex-1 inline-flex justify-center items-center rounded-xl border border-transparent px-4 py-2.5 bg-gradient-to-r from-red-600 to-pink-600 text-sm font-medium text-white hover:from-red-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-lg shadow-red-500/30 transition-all"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
                   </button>
                 </div>
               </motion.div>

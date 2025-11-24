@@ -71,6 +71,54 @@ public class SecretController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/export")
+    public ResponseEntity<List<SecretExportResponse>> exportSecrets() throws Exception {
+        List<Secret> secrets = secretService.getMySecrets();
+        List<SecretExportResponse> responses = new java.util.ArrayList<>();
+
+        for (Secret secret : secrets) {
+            try {
+                SecretExportResponse response = new SecretExportResponse();
+                response.setId(secret.getId());
+                response.setName(secret.getName());
+                response.setValue(secretService.getDecryptedValue(secret.getId()));
+                response.setMetadata(secret.getMetadata());
+                response.setTags(secret.getTags());
+                response.setEmail(secret.getEmail());
+                response.setUsername(secret.getUsername());
+                response.setCreatedAt(secret.getCreatedAt());
+                response.setUpdatedAt(secret.getUpdatedAt());
+                responses.add(response);
+            } catch (Exception e) {
+                // Log error but continue with other secrets
+                System.err.println("Failed to decrypt secret: " + secret.getId() + " - " + e.getMessage());
+                // Optionally, you could add the secret with a placeholder value
+                // or skip it entirely
+            }
+        }
+
+        return ResponseEntity.ok(responses);
+    }
+
+    @PostMapping("/export/excel")
+    public ResponseEntity<byte[]> exportSecretsAsExcel(@RequestBody Map<String, String> request) throws Exception {
+        String password = request.get("password");
+        if (password == null || password.isEmpty()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+
+        byte[] excelBytes = secretService.exportSecretsAsExcel(password);
+
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment",
+                "passkind-vault-" + java.time.LocalDate.now() + ".xlsx");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(excelBytes);
+    }
+
     private SecretResponse mapToResponse(Secret secret) {
         SecretResponse response = new SecretResponse();
         response.setId(secret.getId());
@@ -128,5 +176,18 @@ public class SecretController {
         private String changeType;
         private Map<String, Object> previousData;
         private String modifiedBy;
+    }
+
+    @Data
+    public static class SecretExportResponse {
+        private java.util.UUID id;
+        private String name;
+        private String value; // Decrypted value
+        private Map<String, Object> metadata;
+        private List<String> tags;
+        private String email;
+        private String username;
+        private java.time.LocalDateTime createdAt;
+        private java.time.LocalDateTime updatedAt;
     }
 }

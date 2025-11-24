@@ -14,4 +14,5 @@ public class UserResponse {
     private Boolean isEmailVerified;
     private LocalDateTime createdDate;
     private LocalDateTime lastLoginDate;
+    private String preferences;
 }

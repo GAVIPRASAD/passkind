@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate, Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -62,7 +63,7 @@ const Register = () => {
       try {
         const userResponse = await api.get(`${ENDPOINTS.USERS}/me`);
         updateUser(userResponse.data);
-        navigate("/secrets");
+        navigate("/dashboard");
       } catch (err) {
         console.error("Failed to fetch user details", err);
         setError("Verification successful but failed to load user profile");

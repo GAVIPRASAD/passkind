@@ -12,12 +12,15 @@ import {
   Check,
   Calendar,
   Shield,
+  Download,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
 import useAuthStore from "../store/authStore";
 
 import { getFriendlyErrorMessage } from "../utils/errorUtils";
+import { ENDPOINTS } from "../constants/api";
+import toast from "react-hot-toast";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -31,6 +34,10 @@ const Profile = () => {
     phoneNumber: "",
     fullName: "",
   });
+
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportPassword, setExportPassword] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
 
   const { data: user, isLoading } = useQuery({
     queryKey: ["user", authUser?.username],
@@ -220,9 +227,166 @@ const Profile = () => {
                     year: "numeric",
                   })}
               </div>
+
+              <button
+                onClick={async () => {
+                  try {
+                    // Use bulk export endpoint that returns all secrets with decrypted values
+                    const response = await api.get(
+                      `${ENDPOINTS.SECRETS}/export`
+                    );
+                    const secretsWithValues = response.data;
+
+                    const dataStr = JSON.stringify(secretsWithValues, null, 2);
+                    const blob = new Blob([dataStr], {
+                      type: "application/json",
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.download = `passkind-vault-${
+                      new Date().toISOString().split("T")[0]
+                    }.json`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                  } catch (err) {
+                    console.error("Export failed", err);
+                    toast.error(
+                      "Failed to export vault data. Please try again."
+                    );
+                  }
+                }}
+                className="w-full mt-4 flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export Vault Data (JSON)
+              </button>
+
+              <button
+                onClick={() => setIsExportModalOpen(true)}
+                className="w-full mt-2 flex items-center justify-center px-4 py-2 border border-green-300 dark:border-green-600 rounded-xl text-sm font-medium text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export Vault Data (Excel)
+              </button>
             </div>
           </div>
         </motion.div>
+
+        {/* Password Modal for Excel Export */}
+        <AnimatePresence>
+          {isExportModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white dark:bg-[#161b22] rounded-2xl shadow-xl max-w-md w-full p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  Enter Password to Export
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+                  To protect your Excel file, we use your login password as the
+                  encryption key. Please enter it below to confirm and download.
+                </p>
+
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    setIsExporting(true);
+                    try {
+                      const response = await api.post(
+                        `${ENDPOINTS.SECRETS}/export/excel`,
+                        { password: exportPassword },
+                        { responseType: "blob" }
+                      );
+
+                      const blob = new Blob([response.data], {
+                        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                      });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement("a");
+                      link.href = url;
+                      link.download = `passkind-vault-${
+                        new Date().toISOString().split("T")[0]
+                      }.xlsx`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      URL.revokeObjectURL(url);
+
+                      setIsExportModalOpen(false);
+                      setExportPassword("");
+                      toast.success("Vault exported successfully!");
+                    } catch (err) {
+                      console.error("Excel export failed", err);
+                      if (
+                        err.response?.status === 400 ||
+                        err.response?.status === 401
+                      ) {
+                        toast.error("Invalid password. Please try again.");
+                      } else {
+                        toast.error(
+                          "Failed to export vault. Please try again."
+                        );
+                      }
+                    } finally {
+                      setIsExporting(false);
+                    }
+                  }}
+                >
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      value={exportPassword}
+                      onChange={(e) => setExportPassword(e.target.value)}
+                      className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white p-3 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="Enter your login password"
+                      required
+                      autoFocus
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsExportModalOpen(false);
+                        setExportPassword("");
+                      }}
+                      className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isExporting}
+                      className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl hover:from-cyan-700 hover:to-blue-700 disabled:opacity-50 transition-all flex items-center"
+                    >
+                      {isExporting ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                          Exporting...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4 mr-2" />
+                          Export
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* Information Card */}
         <motion.div
@@ -428,7 +592,92 @@ const Profile = () => {
             </div>
           </div>
         </motion.div>
+
+        {/* Security Settings Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="lg:col-span-3"
+        >
+          <div className="bg-gradient-to-br from-white to-cyan-50 dark:from-[#161B22] dark:to-cyan-900/20 shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
+            <div className="p-8">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+                <Shield className="w-5 h-5 mr-2 text-cyan-600" />
+                Security Settings
+              </h3>
+
+              <SecuritySettings />
+            </div>
+          </div>
+        </motion.div>
       </div>
+    </div>
+  );
+};
+
+// Separate component for Security Settings to use hooks properly
+const SecuritySettings = () => {
+  const { isAutoLockEnabled, autoLockDuration, updateAutoLockSettings } =
+    useAuthStore();
+
+  return (
+    <div className="space-y-6">
+      {/* Auto-Lock Toggle */}
+      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-[#1F2833] dark:to-[#1a2332] rounded-xl border border-gray-200 dark:border-gray-700">
+        <div className="flex-1">
+          <h4 className="text-base font-medium text-gray-900 dark:text-white mb-1">
+            Auto-Lock Timer
+          </h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Automatically lock your vault after a period of inactivity
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            updateAutoLockSettings(!isAutoLockEnabled, autoLockDuration);
+          }}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            isAutoLockEnabled ? "bg-cyan-600" : "bg-gray-300 dark:bg-gray-600"
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              isAutoLockEnabled ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
+      </div>
+
+      {/* Duration Selector */}
+      <AnimatePresence>
+        {isAutoLockEnabled && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-[#1F2833] dark:to-[#1a2332] rounded-xl border border-gray-200 dark:border-gray-700"
+          >
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Lock after inactivity
+            </label>
+            <select
+              value={autoLockDuration}
+              onChange={(e) => {
+                updateAutoLockSettings(true, parseInt(e.target.value));
+              }}
+              className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#0d1117] text-gray-900 dark:text-white p-3 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            >
+              <option value={1}>1 minute</option>
+              <option value={5}>5 minutes</option>
+              <option value={10}>10 minutes</option>
+              <option value={15}>15 minutes</option>
+              <option value={30}>30 minutes</option>
+              <option value={60}>1 hour</option>
+            </select>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

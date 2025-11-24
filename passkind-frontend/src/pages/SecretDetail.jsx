@@ -22,6 +22,7 @@ import { ENDPOINTS } from "../constants/api";
 import SecretHistory from "../components/SecretHistory";
 import { getFriendlyErrorMessage } from "../utils/errorUtils";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import toast from "react-hot-toast";
 
 const SecretDetail = () => {
   const { id } = useParams();
@@ -55,8 +56,7 @@ const SecretDetail = () => {
       navigate("/secrets");
     },
     onError: (err) => {
-      setError(getFriendlyErrorMessage(err));
-      setTimeout(() => setError(null), 5000);
+      toast.error(getFriendlyErrorMessage(err));
       setIsDeleteModalOpen(false);
     },
   });
@@ -77,8 +77,7 @@ const SecretDetail = () => {
         setIsVisible(true);
       } catch (err) {
         console.error("Failed to decrypt secret", err);
-        setError(getFriendlyErrorMessage(err));
-        setTimeout(() => setError(null), 5000);
+        toast.error(getFriendlyErrorMessage(err));
       }
     }
   };

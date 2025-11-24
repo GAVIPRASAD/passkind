@@ -23,15 +23,18 @@ public class SecretService {
     private final EncryptionService encryptionService;
     private final AuditLogRepository auditLogRepository;
     private final com.passkind.backend.repository.SecretHistoryRepository secretHistoryRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     public SecretService(SecretRepository secretRepository, UserRepository userRepository,
             EncryptionService encryptionService, AuditLogRepository auditLogRepository,
-            com.passkind.backend.repository.SecretHistoryRepository secretHistoryRepository) {
+            com.passkind.backend.repository.SecretHistoryRepository secretHistoryRepository,
+            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.secretRepository = secretRepository;
         this.userRepository = userRepository;
         this.encryptionService = encryptionService;
         this.auditLogRepository = auditLogRepository;
         this.secretHistoryRepository = secretHistoryRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -130,7 +133,8 @@ public class SecretService {
             throw new UnauthorizedException("You do not have permission to access this secret");
         }
 
-        // logAudit(username, "READ", "SECRET", String.valueOf(secretId), "Accessed secret value");
+        // logAudit(username, "READ", "SECRET", String.valueOf(secretId), "Accessed
+        // secret value");
         return encryptionService.decrypt(secret.getEncryptedValue());
     }
 
@@ -204,5 +208,96 @@ public class SecretService {
         }
 
         return secretHistoryRepository.findBySecretOrderByModifiedAtDesc(secret);
+    }
+
+    public byte[] exportSecretsAsExcel(String rawPassword) throws Exception {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+
+        // Verify password
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Invalid password");
+        }
+
+        List<Secret> secrets = secretRepository.findByOwner(user);
+
+        // Create workbook
+        org.apache.poi.xssf.usermodel.XSSFWorkbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+        org.apache.poi.ss.usermodel.Sheet sheet = workbook.createSheet("Secrets");
+
+        // Create header row
+        org.apache.poi.ss.usermodel.Row headerRow = sheet.createRow(0);
+        String[] headers = { "Name", "Username", "Email", "Password", "Tags", "Created At", "Updated At" };
+
+        org.apache.poi.ss.usermodel.CellStyle headerStyle = workbook.createCellStyle();
+        org.apache.poi.ss.usermodel.Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+
+        for (int i = 0; i < headers.length; i++) {
+            org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        // Add data rows
+        int rowNum = 1;
+        for (Secret secret : secrets) {
+            org.apache.poi.ss.usermodel.Row row = sheet.createRow(rowNum++);
+
+            row.createCell(0).setCellValue(secret.getName());
+            row.createCell(1).setCellValue(secret.getUsername() != null ? secret.getUsername() : "");
+            row.createCell(2).setCellValue(secret.getEmail() != null ? secret.getEmail() : "");
+
+            // Decrypt password
+            try {
+                String decryptedValue = encryptionService.decrypt(secret.getEncryptedValue());
+                row.createCell(3).setCellValue(decryptedValue);
+            } catch (Exception e) {
+                row.createCell(3).setCellValue("[Decryption failed]");
+                // Log error but continue export
+                System.err.println("Failed to decrypt secret " + secret.getId() + ": " + e.getMessage());
+            }
+
+            row.createCell(4).setCellValue(secret.getTags() != null ? String.join(", ", secret.getTags()) : "");
+            row.createCell(5).setCellValue(secret.getCreatedAt().toString());
+            row.createCell(6).setCellValue(secret.getUpdatedAt().toString());
+        }
+
+        // Auto-size columns
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // In production, you might want to use a separate encryption password
+        workbook.lockStructure();
+
+        // Write workbook to a byte array first
+        java.io.ByteArrayOutputStream workbookBos = new java.io.ByteArrayOutputStream();
+        workbook.write(workbookBos);
+        workbook.close();
+        byte[] workbookBytes = workbookBos.toByteArray();
+
+        // Encrypt the workbook using POIFS
+        try (org.apache.poi.poifs.filesystem.POIFSFileSystem fs = new org.apache.poi.poifs.filesystem.POIFSFileSystem()) {
+            org.apache.poi.poifs.crypt.EncryptionInfo info = new org.apache.poi.poifs.crypt.EncryptionInfo(
+                    org.apache.poi.poifs.crypt.EncryptionMode.standard);
+            org.apache.poi.poifs.crypt.Encryptor enc = info.getEncryptor();
+            enc.confirmPassword(rawPassword);
+
+            // Wrap the workbook bytes in an OPCPackage and save it to the encrypted stream
+            try (org.apache.poi.openxml4j.opc.OPCPackage opc = org.apache.poi.openxml4j.opc.OPCPackage
+                    .open(new java.io.ByteArrayInputStream(workbookBytes));
+                    java.io.OutputStream os = enc.getDataStream(fs)) {
+                opc.save(os);
+            }
+
+            // Write the encrypted file system to the final output stream
+            java.io.ByteArrayOutputStream finalBos = new java.io.ByteArrayOutputStream();
+            fs.writeFilesystem(finalBos);
+            logAudit(username, "EXPORT", "SECRETS", "ALL", "Exported secrets as Excel");
+            return finalBos.toByteArray();
+        }
     }
 }

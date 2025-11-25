@@ -305,6 +305,7 @@ passkind/
     - `SPRING_DATASOURCE_PASSWORD`: Your Neon DB Password
     - `ENCRYPTION_KEY`: A random 32-character string (generate one!)
     - `JWT_SECRET`: A long random string (e.g., 64 chars). **Generate this yourself.**
+    - `CORS_ALLOWED_ORIGINS`: Your Frontend URL (e.g., `https://passkind-frontend.onrender.com`).
     - `VITE_API_URL`: The URL of your backend service.
       - _Note_: You might not know this yet. Deploy once, see the backend URL (e.g., `https://passkind-backend.onrender.com`), then update this variable in the Dashboard and redeploy the frontend.
     - `MAIL_USERNAME` / `MAIL_PASSWORD`: Your Gmail credentials (optional).

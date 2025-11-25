@@ -17,6 +17,7 @@ import {
   Moon,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
+import { AnimatePresence } from "framer-motion";
 
 import { getFriendlyErrorMessage } from "../utils/errorUtils";
 
@@ -30,6 +31,56 @@ const Login = () => {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const updateUser = useAuthStore((state) => state.updateUser);
+
+  // Forgot Password State
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [fpStep, setFpStep] = useState(1); // 1: Email, 2: OTP, 3: New Password
+  const [fpEmail, setFpEmail] = useState("");
+  const [fpOtp, setFpOtp] = useState("");
+  const [fpNewPassword, setFpNewPassword] = useState("");
+  const [fpConfirmPassword, setFpConfirmPassword] = useState("");
+  const [fpLoading, setFpLoading] = useState(false);
+
+  const handleInitiateForgotPassword = async (e) => {
+    e.preventDefault();
+    setFpLoading(true);
+    try {
+      await api.post(ENDPOINTS.FORGOT_PASSWORD, { email: fpEmail });
+      toast.success("OTP sent to your email");
+      setFpStep(2);
+    } catch (err) {
+      toast.error(getFriendlyErrorMessage(err));
+    } finally {
+      setFpLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (fpNewPassword !== fpConfirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    setFpLoading(true);
+    try {
+      await api.post(ENDPOINTS.RESET_PASSWORD, {
+        email: fpEmail,
+        otp: fpOtp,
+        newPassword: fpNewPassword,
+      });
+      toast.success("Password reset successfully. Please login.");
+      setShowForgotPassword(false);
+      setFpStep(1);
+      setFpEmail("");
+      setFpOtp("");
+      setFpNewPassword("");
+      setFpConfirmPassword("");
+    } catch (err) {
+      toast.error(getFriendlyErrorMessage(err));
+    } finally {
+      setFpLoading(false);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -168,6 +219,7 @@ const Login = () => {
           <div className="flex items-center justify-end">
             <button
               type="button"
+              onClick={() => setShowForgotPassword(true)}
               className="text-sm font-medium text-ocean-600 hover:text-ocean-700 dark:text-ocean-400 dark:hover:text-ocean-300"
             >
               Forgot password?
@@ -199,6 +251,165 @@ const Login = () => {
           </p>
         </div>
       </motion.div>
+
+      {/* Forgot Password Modal */}
+      <AnimatePresence>
+        {showForgotPassword && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-[#161b22] rounded-2xl shadow-xl max-w-md w-full p-6 border border-gray-200 dark:border-gray-700"
+            >
+              <div className="text-center mb-6">
+                <div className="w-12 h-12 bg-ocean-100 dark:bg-ocean-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock className="w-6 h-6 text-ocean-600 dark:text-ocean-400" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  Reset Password
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  {fpStep === 1
+                    ? "Enter your email to receive a verification code"
+                    : fpStep === 2
+                    ? "Enter the code sent to your email"
+                    : "Create a new password"}
+                </p>
+              </div>
+
+              {fpStep === 1 && (
+                <form onSubmit={handleInitiateForgotPassword}>
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={fpEmail}
+                      onChange={(e) => setFpEmail(e.target.value)}
+                      className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white p-3 focus:ring-2 focus:ring-ocean-500 focus:border-transparent"
+                      placeholder="name@example.com"
+                      required
+                      autoFocus
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotPassword(false)}
+                      className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={fpLoading}
+                      className="px-4 py-2 bg-gradient-ocean text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition-all flex items-center"
+                    >
+                      {fpLoading ? (
+                        <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                      ) : null}
+                      Send OTP
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {fpStep === 2 && (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setFpStep(3);
+                  }}
+                >
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Enter OTP
+                    </label>
+                    <input
+                      type="text"
+                      value={fpOtp}
+                      onChange={(e) => setFpOtp(e.target.value)}
+                      className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white p-3 text-center tracking-widest text-2xl focus:ring-2 focus:ring-ocean-500 focus:border-transparent"
+                      placeholder="000000"
+                      maxLength={6}
+                      required
+                      autoFocus
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setFpStep(1)}
+                      className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-gradient-ocean text-white rounded-xl hover:opacity-90 transition-all"
+                    >
+                      Verify
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {fpStep === 3 && (
+                <form onSubmit={handleResetPassword}>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={fpNewPassword}
+                      onChange={(e) => setFpNewPassword(e.target.value)}
+                      className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white p-3 focus:ring-2 focus:ring-ocean-500 focus:border-transparent"
+                      placeholder="New password"
+                      required
+                      autoFocus
+                    />
+                  </div>
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Confirm Password
+                    </label>
+                    <input
+                      type="password"
+                      value={fpConfirmPassword}
+                      onChange={(e) => setFpConfirmPassword(e.target.value)}
+                      className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white p-3 focus:ring-2 focus:ring-ocean-500 focus:border-transparent"
+                      placeholder="Confirm password"
+                      required
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setFpStep(2)}
+                      className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={fpLoading}
+                      className="px-4 py-2 bg-gradient-ocean text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition-all flex items-center"
+                    >
+                      {fpLoading ? (
+                        <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                      ) : null}
+                      Reset Password
+                    </button>
+                  </div>
+                </form>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

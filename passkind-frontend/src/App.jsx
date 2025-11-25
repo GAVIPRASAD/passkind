@@ -23,6 +23,7 @@ import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 import VerifiedRoute from "./components/VerifiedRoute";
+import { Toaster } from "react-hot-toast";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,31 @@ function App() {
           </Routes>
           <AutoLockTimer />
         </Router>
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: "var(--toast-bg)",
+              color: "var(--toast-color)",
+            },
+            success: {
+              iconTheme: {
+                primary: "#10b981",
+                secondary: "#fff",
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: "#ef4444",
+                secondary: "#fff",
+              },
+            },
+          }}
+          containerStyle={{
+            zIndex: 9999,
+          }}
+        />
       </ThemeProvider>
     </QueryClientProvider>
   );

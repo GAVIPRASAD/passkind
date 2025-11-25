@@ -6,21 +6,26 @@ import jakarta.validation.Valid;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import com.passkind.backend.dto.ChangePasswordRequest;
+import java.util.Map;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping({ "/api/users", "/users" })
 public class UserController {
 
     private final UserRepository userRepository;
     private final com.passkind.backend.service.OTPService otpService;
     private final com.passkind.backend.security.JwtTokenProvider tokenProvider;
+    private final com.passkind.backend.service.UserService userService;
 
     public UserController(UserRepository userRepository, com.passkind.backend.service.OTPService otpService,
-            com.passkind.backend.security.JwtTokenProvider tokenProvider) {
+            com.passkind.backend.security.JwtTokenProvider tokenProvider,
+            com.passkind.backend.service.UserService userService) {
         this.userRepository = userRepository;
         this.otpService = otpService;
         this.tokenProvider = tokenProvider;
+        this.userService = userService;
     }
 
     @GetMapping("/me")
@@ -128,6 +133,13 @@ public class UserController {
         user.setPreferences(preferences);
         userRepository.save(user);
         return ResponseEntity.ok("Preferences updated");
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        userService.changePassword(username, request);
+        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
     }
 
     // @GetMapping("/export")

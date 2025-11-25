@@ -8,4 +8,7 @@ export const ENDPOINTS = {
   RESEND_OTP: "/auth/resend-otp",
   SECRETS: "/secrets",
   USERS: "/users",
+  FORGOT_PASSWORD: "/auth/forgot-password",
+  RESET_PASSWORD: "/auth/reset-password",
+  CHANGE_PASSWORD: "/users/change-password",
 };

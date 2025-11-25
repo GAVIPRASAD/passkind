@@ -15,7 +15,9 @@ import {
   Download,
   LogOut,
   AlertTriangle,
+  Lock,
 } from "lucide-react";
+
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
 import useAuthStore from "../store/authStore";
@@ -844,6 +846,8 @@ const SecuritySettings = () => {
   const { isAutoLockEnabled, autoLockDuration, updateAutoLockSettings } =
     useAuthStore();
 
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       {/* Auto-Lock Toggle */}
@@ -861,7 +865,7 @@ const SecuritySettings = () => {
             updateAutoLockSettings(!isAutoLockEnabled, autoLockDuration);
           }}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-            isAutoLockEnabled ? "bg-cyan-600" : "bg-gray-300 dark:bg-gray-600"
+            isAutoLockEnabled ? "bg-ocean-600" : "bg-gray-300 dark:bg-gray-600"
           }`}
         >
           <span
@@ -889,7 +893,7 @@ const SecuritySettings = () => {
               onChange={(e) => {
                 updateAutoLockSettings(true, parseInt(e.target.value));
               }}
-              className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#0d1117] text-gray-900 dark:text-white p-3 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#0d1117] text-gray-900 dark:text-white p-3 focus:ring-2 focus:ring-ocean-500 focus:border-transparent"
             >
               <option value={1}>1 minute</option>
               <option value={5}>5 minutes</option>
@@ -901,6 +905,147 @@ const SecuritySettings = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Change Password Button */}
+      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-[#1F2833] dark:to-[#1a2332] rounded-xl border border-gray-200 dark:border-gray-700">
+        <div className="flex-1">
+          <h4 className="text-base font-medium text-gray-900 dark:text-white mb-1">
+            Password
+          </h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Change your password to keep your account secure
+          </p>
+        </div>
+        <button
+          onClick={() => setIsChangePasswordOpen(true)}
+          className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center"
+        >
+          <Lock className="w-4 h-4 mr-2" />
+          Change Password
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {isChangePasswordOpen && (
+          <ChangePasswordModal onClose={() => setIsChangePasswordOpen(false)} />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const ChangePasswordModal = ({ onClose }) => {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmNewPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    setLoading(true);
+    try {
+      await api.post(ENDPOINTS.CHANGE_PASSWORD, {
+        currentPassword,
+        newPassword,
+        confirmNewPassword,
+      });
+      toast.success("Password changed successfully");
+      onClose();
+    } catch (err) {
+      toast.error(getFriendlyErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-white dark:bg-[#161b22] rounded-2xl shadow-xl max-w-md w-full p-6 border border-gray-200 dark:border-gray-700"
+      >
+        <div className="text-center mb-6">
+          <div className="w-12 h-12 bg-ocean-100 dark:bg-ocean-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-6 h-6 text-ocean-600 dark:text-ocean-400" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            Change Password
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            Enter your current password and a new password to update your
+            credentials.
+          </p>
+        </div>
+
+        <form onSubmit={handleChangePassword} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Current Password
+            </label>
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white p-3 focus:ring-2 focus:ring-ocean-500 focus:border-transparent"
+              required
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              New Password
+            </label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white p-3 focus:ring-2 focus:ring-ocean-500 focus:border-transparent"
+              required
+              minLength={6}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Confirm New Password
+            </label>
+            <input
+              type="password"
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+              className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white p-3 focus:ring-2 focus:ring-ocean-500 focus:border-transparent"
+              required
+              minLength={6}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 bg-gradient-ocean text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition-all flex items-center"
+            >
+              {loading ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+              ) : (
+                <Save className="w-4 h-4 mr-2" />
+              )}
+              Update Password
+            </button>
+          </div>
+        </form>
+      </motion.div>
     </div>
   );
 };

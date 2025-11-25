@@ -30,6 +30,8 @@
 /* Body background - Ocean Depths theme */
 body {
   @apply bg-gray-50 text-gray-900;
+  --toast-bg: #ffffff;
+  --toast-color: #111827;
 }
 
 /* Dark mode background */
@@ -42,6 +44,8 @@ body {
     #030712 100%
   );
   @apply text-gray-100 min-h-screen;
+  --toast-bg: #1f2937;
+  --toast-color: #f9fafb;
 }
 
 /* Animated Mesh Gradient Background */

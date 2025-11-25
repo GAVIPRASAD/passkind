@@ -3,7 +3,10 @@ package com.passkind.backend.controller;
 import com.passkind.backend.dto.RegisterRequest;
 import com.passkind.backend.dto.ResendOtpRequest;
 import com.passkind.backend.dto.VerifyEmailRequest;
+import com.passkind.backend.dto.ForgotPasswordRequest;
+import com.passkind.backend.dto.ResetPasswordRequest;
 import com.passkind.backend.entity.User;
+
 import com.passkind.backend.exception.BadRequestException;
 import com.passkind.backend.exception.UnauthorizedException;
 import com.passkind.backend.repository.UserRepository;
@@ -27,8 +30,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping({ "/api/auth", "/auth" })
 @RequiredArgsConstructor
+
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -81,6 +85,19 @@ public class AuthController {
         }
 
         return ResponseEntity.ok(Map.of("message", "OTP resent successfully"));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        userService.initiateForgotPassword(request);
+        return ResponseEntity.ok(Map.of("message", "If an account exists with this email, an OTP has been sent."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        userService.resetPassword(request);
+        return ResponseEntity
+                .ok(Map.of("message", "Password reset successfully. You can now login with your new password."));
     }
 
     @PostMapping("/login")

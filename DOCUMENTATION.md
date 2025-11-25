@@ -271,108 +271,70 @@ passkind/
 - To **reset** the DB: `docker-compose down -v` (Warning: Deletes all data).
 - To **persist** data: `docker-compose down` (without `-v`).
 
+---
 
+## Deployment Guide - Render
 
-
-=======================================================================================================================
-
-
-# Deployment Guide - Render
-
-This guide explains how to deploy PassKind to Render using a conflict-free `production` branch workflow.
-
-## 🚀 Overview
+### 🚀 Overview
 
 - **Development**: Happens on the `main` branch.
 - **Production**: Happens on the `production` branch.
-- **Conflict-Free**: Configuration files (`render.yaml`, `Dockerfile.prod`) exist in both branches, so merging `main` -> `production` never causes conflicts.
+- **Conflict-Free**: Configuration files (`render.yaml`, `Dockerfile.prod`) exist in both branches. Merging `main` -> `production` is safe and won't overwrite your production setup.
 
----
+### 🛠️ Initial Setup
 
-## 1. Initial Setup
+1.  **Create Production Branch**:
 
-### Step 1: Create Production Branch
+    ```bash
+    git checkout -b production
+    git push -u origin production
+    ```
 
-Run these commands in your terminal:
+2.  **Connect to Render**:
 
-```bash
-# Ensure you are on main and up to date
-git checkout main
-git pull origin main
+    - Go to [dashboard.render.com](https://dashboard.render.com).
+    - Click **New +** -> **Blueprint**.
+    - Connect your GitHub repository.
+    - Give it a name (e.g., `passkind`).
 
-# Create production branch
-git checkout -b production
+3.  **Configure Environment Variables**:
+    Render will detect `render.yaml` and ask for these variables. **You must fill them in manually in the dashboard:**
 
-# Push to GitHub
-git push -u origin production
-```
+    - `SPRING_DATASOURCE_URL`: Your Neon DB URL (e.g., `jdbc:postgresql://ep-xyz.aws.neon.tech/neondb...`)
+    - `SPRING_DATASOURCE_USERNAME`: Your Neon DB User
+    - `SPRING_DATASOURCE_PASSWORD`: Your Neon DB Password
+    - `ENCRYPTION_KEY`: A random 32-character string (generate one!)
+    - `JWT_SECRET`: A long random string (e.g., 64 chars). **Generate this yourself.**
+    - `VITE_API_URL`: The URL of your backend service.
+      - _Note_: You might not know this yet. Deploy once, see the backend URL (e.g., `https://passkind-backend.onrender.com`), then update this variable in the Dashboard and redeploy the frontend.
+    - `MAIL_USERNAME` / `MAIL_PASSWORD`: Your Gmail credentials (optional).
 
-### Step 2: Connect to Render
+4.  **Deploy**:
+    - Click **Apply**. Render will create the Backend (Docker) and Frontend (Static Site).
 
-1. Go to [dashboard.render.com](https://dashboard.render.com).
-2. Click **New +** -> **Blueprint**.
-3. Connect your GitHub repository.
-4. Give Render permission to access your repo if needed.
+### 🔄 Deployment Workflow
 
-### Step 3: Configure Blueprint
+When you have new features in `main` ready for production:
 
-Render will automatically detect the `render.yaml` file.
+1.  **Switch to Production**:
 
-1. **Service Group Name**: Enter `passkind-production`.
-2. **Branch**: Select `production`.
-3. **Environment Variables**: You will be prompted to enter the values we defined in `render.yaml`.
+    ```bash
+    git checkout production
+    ```
 
-   - `SPRING_DATASOURCE_URL`: Your Neon DB URL (e.g., `jdbc:postgresql://ep-xyz.aws.neon.tech/neondb...`)
-   - `SPRING_DATASOURCE_USERNAME`: Your Neon DB User
-   - `SPRING_DATASOURCE_PASSWORD`: Your Neon DB Password
-   - `ENCRYPTION_KEY`: A random 32-character string (generate one!)
-   - `MAIL_USERNAME` / `MAIL_PASSWORD`: Your Gmail credentials (optional)
+2.  **Merge Main**:
 
-4. Click **Apply**.
+    ```bash
+    git merge main
+    ```
 
-Render will now build and deploy your application! 🚀
+3.  **Push to Deploy**:
+    ```bash
+    git push origin production
+    ```
+    Render will automatically pick up the changes and deploy.
 
----
+### ⚠️ Troubleshooting
 
-## 2. Deployment Workflow
-
-When you have finished developing a feature on `main` and want to release it:
-
-1. **Switch to Production**:
-
-   ```bash
-   git checkout production
-   ```
-
-2. **Merge Main**:
-
-   ```bash
-   git merge main
-   ```
-
-   _Since config files exist in both branches, this will be a clean merge._
-
-3. **Push to Deploy**:
-   ```bash
-   git push origin production
-   ```
-
-Render detects the push to `production` and automatically redeploys.
-
----
-
-## 3. Troubleshooting
-
-### Build Failures
-
-- **Backend**: Check the logs. Ensure `Dockerfile.prod` is being used (Render should auto-detect this from `render.yaml`).
-- **Frontend**: Ensure `VITE_API_URL` is correctly set. In the Render Dashboard, check the frontend service's "Environment" tab. It should show `VITE_API_URL` linked to the backend service.
-
-### Database Connection
-
-- Ensure your Neon DB allows connections from anywhere (0.0.0.0/0) or whitelists Render's IP addresses.
-- Verify the JDBC URL format: `jdbc:postgresql://<host>:5432/<database>?sslmode=require`
-
-### "Invalid AES Key Length"
-
-- The `ENCRYPTION_KEY` must be **exactly 32 bytes**. If you generated a random string, make sure it's 32 chars long.
+- **Frontend can't reach Backend**: Check `VITE_API_URL` in the Frontend service settings on Render. It must be the full URL (e.g., `https://passkind-backend.onrender.com`).
+- **Database Errors**: Verify `SPRING_DATASOURCE_URL` starts with `jdbc:postgresql://` and ends with `?sslmode=require` (if needed by Neon).

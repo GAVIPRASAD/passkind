@@ -18,18 +18,19 @@ services:
       - key: ENCRYPTION_KEY
         sync: false
       - key: JWT_SECRET
-        generate: true
+        sync: false
       - key: MAIL_USERNAME
         sync: false
       - key: MAIL_PASSWORD
         sync: false
 
   # Frontend Service (Static Site)
-  - type: static
+  - type: web
     name: passkind-frontend
+    runtime: static
     rootDir: passkind-frontend
     buildCommand: npm install && npm run build
-    publishDir: dist
+    staticPublishPath: dist
     plan: free
     routes:
       - type: rewrite
@@ -37,7 +38,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: passkind-backend
-          property: url
+        sync: false

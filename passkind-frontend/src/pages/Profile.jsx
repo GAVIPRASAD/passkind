@@ -13,6 +13,8 @@ import {
   Calendar,
   Shield,
   Download,
+  LogOut,
+  AlertTriangle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
@@ -25,8 +27,15 @@ import toast from "react-hot-toast";
 const Profile = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user: authUser, login } = useAuthStore();
+  const { user: authUser, login, logout } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    setShowLogoutDialog(false);
+    navigate("/");
+  };
 
   const [formData, setFormData] = useState({
     username: "",
@@ -39,12 +48,27 @@ const Profile = () => {
   const [exportPassword, setExportPassword] = useState("");
   const [isExporting, setIsExporting] = useState(false);
 
-  const { data: user, isLoading } = useQuery({
+  const {
+    data: user,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["user", authUser?.username],
     queryFn: async () => {
-      const response = await api.get(`/users/me`);
-      return response.data;
+      try {
+        const response = await api.get(`/users/me`);
+        return response.data;
+      } catch (err) {
+        if (err.response?.status === 404) {
+          // User not found (likely stale token or DB reset)
+          toast.error("Session expired or user not found. Please login again.");
+          useAuthStore.getState().logout();
+          navigate("/login");
+        }
+        throw err;
+      }
     },
+    retry: false, // Don't retry if 404
   });
 
   // Populate form data when user data is loaded
@@ -61,6 +85,9 @@ const Profile = () => {
 
   const [error, setError] = useState(null);
 
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otp, setOtp] = useState("");
+
   const updateMutation = useMutation({
     mutationFn: async (data) => {
       const response = await api.put("/users/me", data);
@@ -68,10 +95,22 @@ const Profile = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries(["user"]);
-      // Update auth store with new user data
-      login(data, useAuthStore.getState().token);
+
+      // If username changed, we get a new token. Update it.
+      const newToken = data.accessToken || useAuthStore.getState().token;
+
+      // Update auth store with new user data and token
+      login(data, newToken);
       setIsEditing(false);
       setError(null);
+
+      // Check if email verification is needed
+      if (data.isEmailVerified === false) {
+        setShowOtpModal(true);
+        toast.success("Profile updated. Please verify your new email.");
+      } else {
+        toast.success("Profile updated successfully");
+      }
     },
     onError: (err) => {
       const message = getFriendlyErrorMessage(err);
@@ -80,6 +119,33 @@ const Profile = () => {
       setTimeout(() => setError(null), 6000);
     },
   });
+
+  const verifyOtpMutation = useMutation({
+    mutationFn: async (otpCode) => {
+      const response = await api.post(ENDPOINTS.VERIFY_OTP, {
+        email: formData.email,
+        otpCode,
+      });
+      return response.data;
+    },
+    onSuccess: async (data) => {
+      setShowOtpModal(false);
+      setOtp("");
+      toast.success("Email verified successfully!");
+      // Refresh user data to show verified status
+      queryClient.invalidateQueries(["user"]);
+      const userResponse = await api.get(`/users/me`);
+      login(userResponse.data, useAuthStore.getState().token);
+    },
+    onError: (err) => {
+      toast.error(getFriendlyErrorMessage(err));
+    },
+  });
+
+  const handleVerifyOtp = (e) => {
+    e.preventDefault();
+    verifyOtpMutation.mutate(otp);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -163,17 +229,28 @@ const Profile = () => {
             My Profile
           </h1>
         </div>
-        {!isEditing && (
+        <div className="flex items-center space-x-3">
+          {!isEditing && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsEditing(true)}
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all"
+            >
+              <Edit className="mr-2 h-5 w-5" />
+              Edit Profile
+            </motion.button>
+          )}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsEditing(true)}
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all"
+            onClick={() => setShowLogoutDialog(true)}
+            className="inline-flex items-center px-4 py-3 border border-transparent shadow-sm text-base font-medium rounded-xl text-white bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all"
           >
-            <Edit className="mr-2 h-5 w-5" />
-            Edit Profile
+            <LogOut className="mr-2 h-5 w-5" />
+            Sign Out
           </motion.button>
-        )}
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -379,6 +456,73 @@ const Profile = () => {
                           <Download className="w-4 h-4 mr-2" />
                           Export
                         </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* OTP Verification Modal */}
+        <AnimatePresence>
+          {showOtpModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white dark:bg-[#161b22] rounded-2xl shadow-xl max-w-md w-full p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="text-center mb-6">
+                  <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Mail className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    Verify New Email
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    We sent a verification code to <br />
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {formData.email}
+                    </span>
+                  </p>
+                </div>
+
+                <form onSubmit={handleVerifyOtp}>
+                  <div className="mb-6">
+                    <input
+                      type="text"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      placeholder="000000"
+                      maxLength={6}
+                      className="w-full text-center text-3xl tracking-[0.5em] font-mono py-3 bg-gray-50 dark:bg-[#0d1117] border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      autoFocus
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowOtpModal(false)}
+                      className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={verifyOtpMutation.isPending || otp.length !== 6}
+                      className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl hover:from-cyan-700 hover:to-blue-700 disabled:opacity-50 transition-all flex items-center"
+                    >
+                      {verifyOtpMutation.isPending ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                          Verifying...
+                        </>
+                      ) : (
+                        "Verify Email"
                       )}
                     </button>
                   </div>
@@ -612,6 +756,84 @@ const Profile = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      <AnimatePresence>
+        {showLogoutDialog && (
+          <div
+            className="fixed inset-0 z-[60] overflow-y-auto"
+            aria-labelledby="modal-title"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity z-50"
+                onClick={() => setShowLogoutDialog(false)}
+              />
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ type: "spring", duration: 0.3 }}
+                className="relative z-50 inline-block align-bottom bg-gradient-to-br from-white to-gray-50 dark:from-[#161B22] dark:to-[#0d1117] rounded-2xl text-left overflow-hidden shadow-2xl transform sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-200 dark:border-gray-700/50"
+              >
+                {/* Header with gradient */}
+                <div className="relative px-6 pt-6 pb-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 shadow-lg shadow-red-500/30">
+                      <LogOut className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                        Sign Out
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Are you sure you want to sign out of your account?
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Info card */}
+                <div className="px-6 pb-6">
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800/30 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-amber-800 dark:text-amber-200">
+                        You'll need to sign in again to access your vault.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="bg-gray-50 dark:bg-[#0d1117]/50 px-6 py-4 flex flex-col-reverse sm:flex-row gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowLogoutDialog(false)}
+                    className="flex-1 inline-flex justify-center items-center rounded-xl border border-gray-300 dark:border-gray-600 px-4 py-2.5 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex-1 inline-flex justify-center items-center rounded-xl border border-transparent px-4 py-2.5 bg-gradient-to-r from-red-600 to-pink-600 text-sm font-medium text-white hover:from-red-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-lg shadow-red-500/30 transition-all"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

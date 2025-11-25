@@ -19,8 +19,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import useAuthStore from "./store/authStore";
 import AutoLockTimer from "./components/AutoLockTimer";
 
-import LandingPageDemo from "./pages/LandingPageDemo";
+import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
+import VerifiedRoute from "./components/VerifiedRoute";
 
 const queryClient = new QueryClient();
 
@@ -41,7 +43,7 @@ function App() {
               path="/"
               element={
                 !isAuthenticated ? (
-                  <LandingPageDemo />
+                  <LandingPage />
                 ) : (
                   <Navigate to="/dashboard" />
                 )
@@ -51,14 +53,18 @@ function App() {
             <Route path="/register" element={<Register />} />
 
             <Route element={<ProtectedRoute />}>
-              <Route element={<Layout />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/secrets" element={<Secrets />} />
-                <Route path="/secrets/new" element={<SecretForm />} />
-                <Route path="/secrets/:id" element={<SecretDetail />} />
-                <Route path="/secrets/:id/edit" element={<SecretForm />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/favorites" element={<Favorites />} />
+              <Route path="/verify-email" element={<VerifyEmailPage />} />
+
+              <Route element={<VerifiedRoute />}>
+                <Route element={<Layout />}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/secrets" element={<Secrets />} />
+                  <Route path="/secrets/new" element={<SecretForm />} />
+                  <Route path="/secrets/:id" element={<SecretDetail />} />
+                  <Route path="/secrets/:id/edit" element={<SecretForm />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/favorites" element={<Favorites />} />
+                </Route>
               </Route>
             </Route>
 

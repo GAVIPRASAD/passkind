@@ -16,7 +16,7 @@ import {
   Zap,
 } from "lucide-react";
 
-const LandingPageDemo = () => {
+const LandingPage = () => {
   const targetRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: targetRef,
@@ -314,4 +314,4 @@ const LandingPageDemo = () => {
   );
 };
 
-export default LandingPageDemo;
+export default LandingPage;

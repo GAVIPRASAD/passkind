@@ -15,4 +15,5 @@ public class UserResponse {
     private LocalDateTime createdDate;
     private LocalDateTime lastLoginDate;
     private String preferences;
+    private String accessToken;
 }

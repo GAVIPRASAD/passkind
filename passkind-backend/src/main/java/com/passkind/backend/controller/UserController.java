@@ -13,9 +13,14 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final com.passkind.backend.service.OTPService otpService;
+    private final com.passkind.backend.security.JwtTokenProvider tokenProvider;
 
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository, com.passkind.backend.service.OTPService otpService,
+            com.passkind.backend.security.JwtTokenProvider tokenProvider) {
         this.userRepository = userRepository;
+        this.otpService = otpService;
+        this.tokenProvider = tokenProvider;
     }
 
     @GetMapping("/me")
@@ -61,17 +66,26 @@ public class UserController {
     @PutMapping("/me")
     public ResponseEntity<com.passkind.backend.dto.UserResponse> updateCurrentUser(
             @Valid @RequestBody UpdateUserRequest request) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByUsername(username)
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new com.passkind.backend.exception.ResourceNotFoundException("User not found"));
 
+        boolean usernameChanged = false;
         // Update user fields
-        if (request.getUsername() != null && !request.getUsername().isEmpty()) {
+        if (request.getUsername() != null && !request.getUsername().isEmpty()
+                && !request.getUsername().equals(user.getUsername())) {
             user.setUsername(request.getUsername());
+            usernameChanged = true;
         }
-        if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+
+        boolean emailChanged = false;
+        if (request.getEmail() != null && !request.getEmail().isEmpty()
+                && !request.getEmail().equals(user.getEmail())) {
             user.setEmail(request.getEmail());
+            user.setIsEmailVerified(false);
+            emailChanged = true;
         }
+
         if (request.getPhoneNumber() != null) {
             user.setPhoneNumber(request.getPhoneNumber());
         }
@@ -84,7 +98,27 @@ public class UserController {
         }
 
         User updatedUser = userRepository.save(user);
-        return ResponseEntity.ok(mapToUserResponse(updatedUser));
+
+        if (emailChanged) {
+            try {
+                otpService.generateOTP(updatedUser.getEmail());
+            } catch (Exception e) {
+                // Log error but don't fail the update, user can request OTP later
+                System.err.println("Failed to send OTP for email update: " + e.getMessage());
+            }
+        }
+
+        com.passkind.backend.dto.UserResponse response = mapToUserResponse(updatedUser);
+
+        if (usernameChanged) {
+            // Generate new token for the new username
+            org.springframework.security.core.Authentication authentication = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                    updatedUser.getUsername(), null, java.util.Collections.emptyList());
+            String newToken = tokenProvider.generateToken(authentication);
+            response.setAccessToken(newToken);
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/preferences")

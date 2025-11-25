@@ -48,16 +48,32 @@ const SecretForm = () => {
   const [editingMetaKey, setEditingMetaKey] = useState(null);
   const [error, setError] = useState(null);
 
-  const { data: secret, isLoading } = useQuery({
+  const {
+    data: secret,
+    isLoading,
+    isError,
+    error: fetchError,
+  } = useQuery({
     queryKey: ["secret", id],
     queryFn: async () => {
-      const response = await api.get(`${ENDPOINTS.SECRETS}/${id}/value`);
-      const listResponse = await api.get(ENDPOINTS.SECRETS);
-      const secretDetails = listResponse.data.find((s) => s.id === id);
-      return { ...secretDetails, decryptedValue: response.data };
+      // Fetch metadata and value in parallel for better performance
+      const [metadataResponse, valueResponse] = await Promise.all([
+        api.get(`${ENDPOINTS.SECRETS}/${id}`),
+        api.get(`${ENDPOINTS.SECRETS}/${id}/value`),
+      ]);
+      return { ...metadataResponse.data, decryptedValue: valueResponse.data };
     },
     enabled: isEditMode,
+    retry: 1,
   });
+
+  useEffect(() => {
+    if (isError) {
+      console.error("Failed to fetch secret:", fetchError);
+      toast.error("Failed to load secret details");
+      navigate("/secrets");
+    }
+  }, [isError, fetchError, navigate]);
 
   useEffect(() => {
     if (secret) {

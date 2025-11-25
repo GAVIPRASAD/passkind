@@ -109,9 +109,12 @@ public class AuthController {
             throw new UnauthorizedException("Account is locked. Please try again later.");
         }
 
-        if (!user.getIsEmailVerified()) {
-            throw new UnauthorizedException("Email not verified. Please verify your email.");
-        }
+        // Removed: Email verification check is now handled on the frontend via
+        // VerifiedRoute
+        // if (!user.getIsEmailVerified()) {
+        // throw new UnauthorizedException("Email not verified. Please verify your
+        // email.");
+        // }
 
         try {
             Authentication authentication = authenticationManager.authenticate(

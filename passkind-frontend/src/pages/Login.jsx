@@ -51,7 +51,9 @@ const Login = () => {
       navigate("/dashboard");
     } catch (err) {
       console.error("Login failed", err);
-      toast.error(getFriendlyErrorMessage(err));
+      const message = getFriendlyErrorMessage(err);
+      setError(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

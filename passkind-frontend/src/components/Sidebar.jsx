@@ -29,7 +29,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const handleLogout = () => {
     logout();
     setShowLogoutDialog(false);
-    navigate("/login");
+    navigate("/");
   };
 
   const navItems = [

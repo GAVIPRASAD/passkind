@@ -4,6 +4,7 @@ export const ENDPOINTS = {
   LOGIN: "/auth/login",
   REGISTER: "/auth/register",
   VERIFY_OTP: "/auth/verify-email",
+  RESEND_OTP: "/auth/resend-otp",
   SECRETS: "/secrets",
   USERS: "/users",
 };

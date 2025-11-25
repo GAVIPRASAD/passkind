@@ -138,6 +138,17 @@ public class SecretService {
         return encryptionService.decrypt(secret.getEncryptedValue());
     }
 
+    public Secret getSecret(java.util.UUID secretId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Secret secret = secretRepository.findById(secretId)
+                .orElseThrow(() -> new ResourceNotFoundException("Secret not found with id: " + secretId));
+
+        if (!secret.getOwner().getUsername().equals(username)) {
+            throw new UnauthorizedException("You do not have permission to access this secret");
+        }
+        return secret;
+    }
+
     @Transactional
     public void deleteSecret(java.util.UUID secretId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

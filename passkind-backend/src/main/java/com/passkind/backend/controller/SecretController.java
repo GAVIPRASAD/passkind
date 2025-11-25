@@ -49,6 +49,12 @@ public class SecretController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<SecretResponse> getSecret(@PathVariable java.util.UUID id) {
+        Secret secret = secretService.getSecret(id);
+        return ResponseEntity.ok(mapToResponse(secret));
+    }
+
     @GetMapping("/{id}/value")
     public ResponseEntity<String> getSecretValue(@PathVariable java.util.UUID id) throws Exception {
         return ResponseEntity.ok(secretService.getDecryptedValue(id));

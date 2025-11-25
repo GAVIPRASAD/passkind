@@ -30,6 +30,49 @@ Stop trusting third-party clouds with your most sensitive data. Take control wit
 
 ---
 
+## 🎨 Features Walkthrough
+
+### 1. **User Registration & Email Verification**
+
+- Register with username, email, password, phone number
+- Receive OTP via beautiful branded email template
+- Verify email to activate account
+
+### 2. **Password Management**
+
+- **Forgot Password**: Email-based OTP reset flow
+- **Change Password**: Secure password change from profile
+
+### 3. **Vault Management**
+
+- Create, read, update, delete secrets
+- Store credentials with metadata (tags, notes, URLs)
+- View decrypted values on demand
+
+### 4. **Audit Trail**
+
+- Track all changes to secrets
+- View who made changes and when
+- See previous values in timeline
+
+### 5. **Export Options**
+
+- **JSON Export**: Unencrypted JSON with all secrets
+- **Excel Export**: Password-protected Excel file
+
+### 6. **Auto-Lock**
+
+- Configurable inactivity timeout
+- Auto-logout for enhanced security
+
+---
+<img width="3024" height="7698" alt="passkind copy" src="https://github.com/user-attachments/assets/382f3735-ff27-4f25-8b8d-490faff44992" />
+
+<img width="3024" height="3362" alt="passkinddashboard" src="https://github.com/user-attachments/assets/1fe7f5fb-11e3-411b-9731-d16f259ec0b7" />
+
+<img width="3024" height="2314" alt="passkindvault" src="https://github.com/user-attachments/assets/e3e3af87-ca82-4d7c-a6b8-c72d2cda1945" />
+
+---
 
 ## 🛠️ Quick Start
 
@@ -250,45 +293,6 @@ cd passkind-backend
 cd passkind-frontend
 npm run build
 ```
-
----
-
-## 🎨 Features Walkthrough
-
-### 1. **User Registration & Email Verification**
-
-- Register with username, email, password, phone number
-- Receive OTP via beautiful branded email template
-- Verify email to activate account
-
-### 2. **Password Management**
-
-- **Forgot Password**: Email-based OTP reset flow
-- **Change Password**: Secure password change from profile
-
-### 3. **Vault Management**
-
-- Create, read, update, delete secrets
-- Store credentials with metadata (tags, notes, URLs)
-- View decrypted values on demand
-
-### 4. **Audit Trail**
-
-- Track all changes to secrets
-- View who made changes and when
-- See previous values in timeline
-
-### 5. **Export Options**
-
-- **JSON Export**: Unencrypted JSON with all secrets
-- **Excel Export**: Password-protected Excel file
-
-### 6. **Auto-Lock**
-
-- Configurable inactivity timeout
-- Auto-logout for enhanced security
-
----
 
 ## 🐛 Troubleshooting
 

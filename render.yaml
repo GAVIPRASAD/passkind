@@ -28,7 +28,7 @@ services:
 
   # Frontend Service (Static Site)
   - type: web
-    name: passkind-frontend
+    name: passkind
     runtime: static
     rootDir: passkind-frontend
     buildCommand: npm install && npm run build

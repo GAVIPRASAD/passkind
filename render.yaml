@@ -1,0 +1,43 @@
+services:
+  # Backend Service (Docker)
+  - type: web
+    name: passkind-backend
+    runtime: docker
+    rootDir: passkind-backend
+    dockerfilePath: Dockerfile.prod
+    plan: free
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: JWT_SECRET
+        generate: true
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+
+  # Frontend Service (Static Site)
+  - type: static
+    name: passkind-frontend
+    rootDir: passkind-frontend
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: passkind-backend
+          property: url

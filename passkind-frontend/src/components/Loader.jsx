@@ -3,11 +3,15 @@ import { ShieldCheck } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 
 const Loader = ({
-  onComplete
+  onComplete,
+  theme: propTheme,
+  className = "",
+  style = {},
 }) => {
   const [progress, setProgress] = useState(0);
-  const { theme } = useTheme();
-  const isLight = theme === "light";
+  const { theme: globalTheme } = useTheme();
+  const activeTheme = propTheme || globalTheme;
+  const isLight = activeTheme === "light";
 
   // Timer logic
   useEffect(() => {
@@ -26,45 +30,48 @@ const Loader = ({
   }, [onComplete]);
 
   // CSS Variables for dynamic theming
-const themeVars = {
-  // Backgrounds
-  "--border-main": isLight ? "#f0f9ff" : "#000000", // Very faint blue-white border
+  const themeVars = {
+    // Backgrounds
+    "--border-main": isLight ? "#f8fafc" : "#000000", // Slate-50
 
-  // Ring Two (Rotating Band) - Swapped greys for Ice/Crystal tones
-  "--r2-start": isLight ? "#ffffff" : "#273e42ff",
-  "--r2-end": isLight ? "#e0f2fe" : "#2e4245ff", // Light Sky instead of Grey
-  "--r2-border": isLight ? "#dbeafe" : "#111111", // Subtle blue outline
+    // Ring Two (Rotating Band) - Swapped greys for Ice/Crystal tones
+    "--r2-start": isLight ? "#ffffff" : "#273e42ff",
+    "--r2-end": isLight ? "#f1f5f9" : "#2e4245ff", // Slate-100 instead of Blue
+    "--r2-border": isLight ? "#e2e8f0" : "#111111", // Slate-200
 
-  // Core & Ring Three (Inner Spheres)
-  "--core-start": isLight ? "#ffffff" : "#4a7273ff",
-  "--core-end": isLight ? "#bfdbfe" : "#000000ff", // Blue gradient instead of slate
-  "--core-shadow": isLight ? "#bae6fd" : "#000000", // Blue glow shadow
-  "--r3-shadow": isLight ? "#dbeafe" : "#000000",
+    // Core & Ring Three (Inner Spheres)
+    "--core-start": isLight ? "#ffffff" : "#4a7273ff",
+    "--core-end": isLight ? "#f8fafc" : "#000000ff", // Slate-50
+    "--core-shadow": isLight ? "#cbd5e1" : "#000000", // Slate-300
+    "--r3-shadow": isLight ? "#e2e8f0" : "#000000", // Slate-200
 
-  "--core-text": isLight ? "#31ced1ff" : "#91ffff",
-  "--core-text-hover": isLight ? "#3aa1abff" : "#ffffff",
+    "--core-text": isLight ? "#0d9488" : "#91ffff", // Teal-600
+    "--core-text-hover": isLight ? "#0f766e" : "#ffffff", // Teal-700
 
-  // The "Spin" (Radar Sweep)
-  "--spin-c1": isLight ? "#31ced1ff" : "#91ffff",
-  "--spin-c2": isLight ? "#37ced0ff" : "#0fb4e7",
-  "--spin-bg": isLight ? "rgba(255,255,255,0)" : "rgba(0,0,0,0)",
+    // The "Spin" (Radar Sweep)
+    "--spin-c1": isLight ? "#2dd4bf" : "#91ffff", // Teal-400
+    "--spin-c2": isLight ? "#99f6e4" : "#0fb4e7", // Teal-200
+    "--spin-bg": isLight ? "rgba(255,255,255,0)" : "rgba(0,0,0,0)",
 
-  // Glows
-  "--outer-glow": isLight
-    ? "rgba(14, 165, 233, 0.1)"
-    : "rgba(15, 180, 231, 0.2)",
-  "--shield-glow": isLight
-    ? "rgba(14, 165, 233, 0.4)"
-    : "rgba(145, 255, 255, 0.8)",
-};
+    // Glows
+    "--outer-glow": isLight
+      ? "rgba(148, 163, 184, 0.1)" // Slate-400 low opacity
+      : "rgba(15, 180, 231, 0.2)",
+    "--shield-glow": isLight
+      ? "rgba(45, 212, 191, 0.3)" // Teal glow
+      : "rgba(145, 255, 255, 0.8)",
+  };
 
   return (
     <div
-      className="flex flex-col items-center justify-center min-h-[400px] w-full font-sans rounded-xl border transition-colors duration-500"
+      className={`flex flex-col items-center justify-center font-sans rounded-xl border transition-colors duration-500 ${
+        className || "min-h-[400px] w-full"
+      }`}
       style={{
         backgroundColor: "var(--bg-main)",
         borderColor: "var(--border-main)",
         ...themeVars,
+        ...style,
       }}
     >
       <style>{`

@@ -1,0 +1,54 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 
+      Cyber Gradient: Electric Cyan to Deep Teal
+    -->
+    <linearGradient id="cyberGrad" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#67e8f9"/> <!-- Cyan 300 -->
+      <stop offset="100%" stop-color="#0ea5e9"/> <!-- Sky 500 -->
+    </linearGradient>
+
+    <!-- 
+      Neon Glow Filter
+    -->
+    <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 
+    Main Hexagon Body (Dark Matter)
+  -->
+  <path 
+    d="M32 4L56.2 18V46L32 60L7.8 46V18L32 4Z" 
+    fill="#020617" 
+    stroke="url(#cyberGrad)" 
+    stroke-width="3" 
+    stroke-linejoin="round"
+  />
+
+  <!-- 
+    Internal Neural Circuitry
+  -->
+  <g filter="url(#neonGlow)" stroke="#22d3ee" stroke-width="3" stroke-linecap="round">
+    <path d="M32 32L32 14" opacity="0.8"/>
+    <path d="M32 32L47.5 41" opacity="0.8"/>
+    <path d="M32 32L16.5 41" opacity="0.8"/>
+  </g>
+
+  <!-- 
+    Central Core Node
+  -->
+  <circle cx="32" cy="32" r="5" fill="#ffffff" filter="url(#neonGlow)"/>
+  
+  <!-- 
+    Decorative Tech Dots
+  -->
+  <circle cx="32" cy="8" r="1.5" fill="#22d3ee"/>
+  <circle cx="53" cy="44" r="1.5" fill="#22d3ee"/>
+  <circle cx="11" cy="44" r="1.5" fill="#22d3ee"/>
+</svg>

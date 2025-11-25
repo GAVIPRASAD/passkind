@@ -21,6 +21,8 @@ import { ENDPOINTS } from "../constants/api";
 import useAuthStore from "../store/authStore";
 import VaultHealth from "../components/VaultHealth";
 import Loader from "../components/Loader";
+import PasswordGeneratorWidget from "../components/PasswordGeneratorWidget";
+import DidYouKnowWidget from "../components/DidYouKnowWidget";
 
 const Dashboard = () => {
   const { user } = useAuthStore();
@@ -153,6 +155,26 @@ const Dashboard = () => {
           </motion.div>
         ))}
       </motion.div>
+
+      {/* WIDGETS SECTION */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="h-full"
+        >
+          <PasswordGeneratorWidget />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="h-full"
+        >
+          <DidYouKnowWidget />
+        </motion.div>
+      </div>
 
       {/* RECENT ACTIVITY */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

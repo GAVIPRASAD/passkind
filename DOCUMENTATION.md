@@ -1,154 +1,151 @@
-# passKind - Complete Documentation
+# passKind - Technical Documentation
 
 ## Table of Contents
 
 1. [Overview](#overview)
 2. [Architecture](#architecture)
-3. [Getting Started](#getting-started)
-4. [Development Guide](#development-guide)
-5. [API Documentation](#api-documentation)
-6. [Security Features](#security-features)
-7. [Troubleshooting](#troubleshooting)
-8. [Advanced Topics](#advanced-topics)
+3. [Features & Modules](#features--modules)
+4. [Security Model](#security-model)
+5. [Getting Started](#getting-started)
+6. [Development Guide](#development-guide)
+7. [API Reference](#api-reference)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Overview
 
-passKind is a secure secret management application built with:
+**passKind** is a self-hosted, full-stack password manager designed for privacy and security. It employs a "zero-knowledge" architecture where possible, ensuring that secrets are encrypted before storage.
 
-- **Backend**: Spring Boot 3.2.3, PostgreSQL, JWT Authentication, AES-256 Encryption
-- **Frontend**: React 18, Vite, Zustand, TanStack Query, Tailwind CSS
-- **Infrastructure**: Docker Compose for containerization
+### Tech Stack
 
-### Key Features
-
-- 🔐 **Secure Storage**: AES-256-GCM encryption for all secrets
-- 🔑 **JWT Authentication**: Token-based authentication with HS512
-- 👥 **User Management**: Registration, login, preferences
-- 📝 **Audit Logging**: Track all secret access and modifications
-- 🎨 **Modern UI**: Dark/light themes, responsive design
-- 🔄 **Hot Reload**: Automatic code reloading during development
-- 📊 **API Documentation**: Interactive Swagger UI
+- **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion
+- **State Management**: Zustand, TanStack Query
+- **Backend**: Spring Boot 3.2.3, Java 17
+- **Database**: PostgreSQL 15
+- **Infrastructure**: Docker & Docker Compose
+- **Authentication**: JWT (HS512), BCrypt
+- **Encryption**: AES-256-GCM
 
 ---
 
 ## Architecture
 
-### System Architecture
+### High-Level Design
 
-```
-┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
-│   React UI      │─────▶│  Spring Boot    │─────▶│   PostgreSQL    │
-│   (Port 3000)   │      │   (Port 8080)   │      │   (Port 5432)   │
-└─────────────────┘      └─────────────────┘      └─────────────────┘
-         │                        │
-         │                        │
-         ▼                        ▼
-    Vite Dev Server         Swagger UI
-                           (Port 8080)
+```mermaid
+graph TD
+    Client[React Frontend] <-->|REST API / HTTPS| LB[Nginx / Docker Router]
+    LB <-->|Port 8080| API[Spring Boot Backend]
+    API <-->|JDBC| DB[(PostgreSQL)]
+    API -->|Logs| Audit[Audit Logger]
 ```
 
-### Package Structure
+### Frontend Architecture (`passkind-frontend`)
 
-#### Backend (`com.passkind.backend`)
+The frontend is built with a component-based architecture using React and Vite.
 
-```
-com.passkind.backend/
-├── config/              # Security, OpenAPI configuration
-│   ├── SecurityConfig.java
-│   └── OpenApiConfig.java
-├── controller/          # REST API endpoints
-│   ├── AuthController.java
-│   ├── SecretController.java
-│   └── UserController.java
-├── dto/                 # Data Transfer Objects
-│   └── ErrorResponse.java
-├── entity/              # JPA entities
-│   ├── User.java
-│   ├── Secret.java
-│   ├── AuditLog.java
-│   └── SecretShare.java
-├── exception/           # Custom exceptions
-│   ├── ResourceNotFoundException.java
-│   ├── UnauthorizedException.java
-│   ├── BadRequestException.java
-│   └── GlobalExceptionHandler.java
-├── repository/          # Data access layer
-│   ├── UserRepository.java
-│   ├── SecretRepository.java
-│   ├── AuditLogRepository.java
-│   └── SecretShareRepository.java
-├── security/            # JWT & authentication
-│   ├── JwtTokenProvider.java
-│   ├── JwtAuthenticationFilter.java
-│   └── CustomUserDetailsService.java
-├── service/             # Business logic
-│   ├── SecretService.java
-│   └── EncryptionService.java
-└── PassKindBackendApplication.java
-```
+- **Routing**: `react-router-dom` handles client-side routing.
+- **Theming**: A custom `ThemeProvider` (via `index.css` variables and Tailwind `dark` mode) manages Light/Dark themes.
+- **Animations**: `framer-motion` powers complex animations (Landing Page hero, staggered entrances, 3D cards).
+- **State**:
+  - `useAuthStore` (Zustand): Manages user session, tokens, and preferences.
+  - `TanStack Query`: Handles server state (fetching secrets, caching, invalidation).
 
-#### Frontend (`passkind-frontend/src`)
+**Key Components:**
 
-```
-src/
-├── components/          # Reusable UI components
-│   ├── Login.jsx
-│   ├── SecretModal.jsx
-│   ├── ImportExport.jsx
-│   └── Sidebar.jsx
-├── pages/               # Page components
-│   └── Dashboard.jsx
-├── store/               # Zustand state management
-│   └── useAuthStore.js
-├── utils/               # Utilities
-│   └── constants.js
-├── App.jsx              # Main app component
-├── main.jsx             # Entry point
-└── index.css            # Global styles
-```
+- `LandingPage.jsx`: A high-performance marketing page with interactive widgets (Password Generator) and 3D visualizations.
+- `Dashboard.jsx`: The main user hub featuring Vault Health, Quick Access, and Security Widgets.
+- `VaultHealth.jsx`: Visualizes password strength and hygiene using a circular score indicator.
+- `PasswordGeneratorWidget.jsx`: A standalone, interactive widget for generating secure strings.
 
-### Database Schema
+### Backend Architecture (`passkind-backend`)
 
-```sql
--- Users table
-CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY,
-    username VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    preferences JSONB
-);
+The backend is a layered Spring Boot application.
 
--- Secrets table
-CREATE TABLE secrets (
-    id BIGSERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    encrypted_value TEXT NOT NULL,
-    user_id BIGINT REFERENCES users(id),
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
-);
+- **Controller Layer**: REST endpoints (`AuthController`, `SecretController`, `UserController`).
+- **Service Layer**: Business logic and transaction management.
+- **Security Layer**:
+  - `JwtAuthenticationFilter`: Intercepts requests to validate JWT tokens.
+  - `EncryptionService`: Handles AES-256 encryption/decryption of secret values.
+- **Repository Layer**: JPA interfaces for database interaction.
 
--- Audit logs table
-CREATE TABLE audit_logs (
-    id BIGSERIAL PRIMARY KEY,
-    username VARCHAR(255),
-    action VARCHAR(50),
-    resource_type VARCHAR(50),
-    resource_id BIGINT,
-    details TEXT,
-    timestamp TIMESTAMP
-);
+---
 
--- Secret shares table
-CREATE TABLE secret_shares (
-    id BIGSERIAL PRIMARY KEY,
-    secret_id BIGINT REFERENCES secrets(id),
-    shared_with_id BIGINT REFERENCES users(id),
-    permission VARCHAR(50)
-);
-```
+## Features & Modules
+
+### 1. Landing Page
+
+A fully responsive, animated landing page designed to convert visitors.
+
+- **Orbital Hero**: Custom canvas-like animation using CSS/Framer Motion.
+- **Interactive Widgets**: Embedded `PasswordGeneratorWidget` lets users try features instantly.
+- **Theme Toggle**: Seamless switching between "Vault Dark" and "Clean Light" modes.
+
+### 2. User Dashboard
+
+The central command center for users.
+
+- **Vault Health**: Calculates a security score based on password age, reuse, and complexity.
+- **Quick Actions**: One-click access to add secrets, view favorites, or update settings.
+- **Security Tips**: "Did You Know?" widget providing rotating security advice.
+- **Recent Activity**: Audit trail of the latest vault interactions.
+
+### 3. Authentication & User Management
+
+- **Registration**: Creates a new user with hashed password.
+- **Login**: Issues a JWT (`accessToken`) valid for 1 hour.
+- **Email Verification**:
+  - Users receive a 6-digit OTP via email upon registration.
+  - Verification is required to unlock full account features (like password recovery).
+  - Configurable via SMTP settings in `docker-compose.yml`.
+- **Profile Management**: Users can update usernames and preferences. Token is automatically refreshed upon username change.
+
+### 4. Secret Management
+
+- **CRUD Operations**: Create, Read, Update, Delete secrets.
+- **Encryption**: Values are encrypted _before_ saving to the database.
+- **Metadata**: Support for custom key-value pairs (e.g., website URL, username).
+- **Tagging**: Organize secrets with custom tags.
+- **Favorites**: Mark frequently used secrets for quick access via the "Favorites" tab.
+- **History & Audit**:
+  - **Secret History**: View previous versions of a secret (if enabled).
+  - **Audit Logs**: Detailed timeline of who accessed or modified a secret and when.
+
+### 5. Advanced Features
+
+- **Auto-Lock**:
+  - Automatically locks the vault after a user-defined period of inactivity (default: 15 mins).
+  - Requires re-authentication (password) to unlock.
+  - Configurable in User Settings.
+- **Import/Export**:
+  - **Export**: Download your entire vault as a CSV file for backup.
+  - **Import**: Bulk import secrets from CSV (schema validation included).
+- **Password Generator**:
+  - Built-in tool to create strong, random passwords.
+  - Customizable length, numbers, and symbols.
+
+---
+
+## Security Model
+
+### Zero-Knowledge Encryption
+
+PassKind uses **AES-256-GCM** (Galois/Counter Mode) for encrypting secret values.
+
+- **Key Management**: The `ENCRYPTION_KEY` (32 bytes) is injected via environment variables.
+- **Process**:
+  1. User submits plaintext value.
+  2. Backend generates a unique IV (Initialization Vector).
+  3. Value is encrypted using the Key + IV.
+  4. Ciphertext and IV are stored in the database.
+  5. Decryption requires the same Key + IV.
+
+### JWT Authentication
+
+- **Algorithm**: HS512 (HMAC SHA-512).
+- **Stateless**: No server-side sessions.
+- **Protection**: Tokens are signed to prevent tampering.
 
 ---
 
@@ -156,594 +153,120 @@ CREATE TABLE secret_shares (
 
 ### Prerequisites
 
-- Docker Desktop installed and running
-- No local Java, Node.js, or PostgreSQL required
+- Docker Desktop installed.
 
-### Quick Start
+### Installation
 
-1. **Clone/Navigate to project:**
-
+1. **Clone the repo**:
    ```bash
-   cd /Users/kgaviprasad/Downloads/PERS/pass
+   git clone https://github.com/yourusername/passkind.git
+   cd passkind
    ```
+2. **Configure Environment**:
 
-2. **Start all services:**
+   - Open `docker-compose.yml`.
+   - Update `MAIL_USERNAME` and `MAIL_PASSWORD` (App Password) for email features.
+   - (Optional) Change `ENCRYPTION_KEY` and `JWT_SECRET` for production.
+
+3. **Start Services**:
 
    ```bash
    docker-compose up -d
    ```
 
-3. **Access the application:**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8080
-   - Swagger UI: http://localhost:8080/swagger-ui.html
-   - Adminer (DB): http://localhost:8081
+   _First run may take 2-3 minutes to download images._
 
-### First-Time Setup
-
-1. **Register a user via Swagger:**
-
-   - Go to http://localhost:8080/swagger-ui.html
-   - Find `POST /auth/register`
-   - Click "Try it out"
-   - Enter:
-     ```json
-     {
-       "username": "admin",
-       "password": "password123"
-     }
-     ```
-   - Click "Execute"
-
-2. **Login to get JWT token:**
-
-   - Find `POST /auth/login`
-   - Use same credentials
-   - Copy the `accessToken` from response
-
-3. **Authorize in Swagger:**
-
-   - Click "Authorize" button (🔓 lock icon)
-   - Paste token (without "Bearer ")
-   - Click "Authorize" then "Close"
-
-4. **Create your first secret:**
-   - Find `POST /api/secrets`
-   - Click "Try it out"
-   - Enter:
-     ```json
-     {
-       "title": "Gmail Password",
-       "value": "mySecretPassword123",
-       "metadata": { "email": "user@gmail.com" },
-       "tags": ["email", "personal"]
-     }
-     ```
-
----
-
-### Email Configuration (Gmail)
-
-To enable email OTP verification, you need to configure SMTP credentials. For Gmail, you must use an **App Password**:
-
-1.  **Go to Google Account**: https://myaccount.google.com/
-2.  **Security**: Select "Security" on the left panel.
-3.  **2-Step Verification**: Ensure it is turned **ON**.
-4.  **App Passwords**:
-    - Search for "App passwords" in the search bar at the top.
-    - Or go to: https://myaccount.google.com/apppasswords
-    - Create a new app password (name it "passKind").
-    - Copy the 16-character password (spaces don't matter).
-5.  **Update Configuration**:
-    - Open `docker-compose.yml`
-    - Update the environment variables under `backend`:
-      ```yaml
-      - MAIL_USERNAME=your-email@gmail.com
-      - MAIL_PASSWORD=your-16-char-app-password
-      ```
-    - Restart the backend: `docker-compose up -d backend`
+4. **Access App**:
+   - Frontend: `http://localhost:3000`
+   - Swagger API: `http://localhost:8080/swagger-ui.html`
 
 ---
 
 ## Development Guide
 
-### Hot Reload Setup
+### Project Structure
 
-#### Frontend (Already Working)
-
-- Changes to `.jsx`, `.js`, `.css` files reload instantly
-- Powered by Vite HMR (Hot Module Replacement)
-
-#### Backend (Configured)
-
-- Java file changes trigger automatic restart (3-5 seconds)
-- Powered by Spring Boot DevTools
-- Volume mounts sync local files to container
-
-### Development Workflow
-
-1. **Start development environment:**
-
-   ```bash
-   docker-compose up
-   ```
-
-2. **Make code changes:**
-
-   - Frontend: Edit files in `passkind-frontend/src/`
-   - Backend: Edit files in `passkind-backend/src/main/java/`
-
-3. **See changes automatically:**
-   - Frontend: Instant
-   - Backend: 3-5 seconds
-
-### When to Rebuild
-
-| Change Type                 | Command                                                |
-| --------------------------- | ------------------------------------------------------ |
-| Code files                  | No rebuild needed (hot reload)                         |
-| `pom.xml` dependencies      | `docker-compose up --build`                            |
-| Package structure           | `docker-compose build --no-cache && docker-compose up` |
-| Dockerfile                  | `docker-compose up --build`                            |
-| `package.json` dependencies | `docker-compose up --build`                            |
-
-### Useful Commands
-
-```bash
-# View logs
-docker logs passkind-backend -f
-docker logs passkind-frontend -f
-
-# Restart a service
-docker-compose restart backend
-docker-compose restart frontend
-
-# Stop all services
-docker-compose down
-
-# Stop and remove volumes (⚠️ deletes data)
-docker-compose down -v
-
-# Rebuild without cache
-docker-compose build --no-cache
-
-# Access database
-docker exec -it postgres-db psql -U user -d appdb
 ```
+passkind/
+├── passkind-backend/       # Spring Boot Source
+│   ├── src/main/java/com/passkind/backend/
+│   │   ├── controller/     # API Endpoints
+│   │   ├── entity/         # DB Models
+│   │   ├── security/       # JWT & Encryption
+│   │   └── service/        # Logic (Email, OTP, Secrets)
+├── passkind-frontend/      # React Source
+│   ├── src/
+│   │   ├── components/     # Reusable UI (Widgets, Cards)
+│   │   ├── pages/          # Routes (Landing, Dashboard, VerifyEmail)
+│   │   └── store/          # Zustand Stores
+├── docker-compose.yml      # Orchestration
+└── DOCUMENTATION.md        # This file
+```
+
+### Hot Reloading
+
+- **Frontend**: Vite HMR is active. Edits to `.jsx` files reflect instantly.
+- **Backend**: Spring Boot DevTools is active. Recompiles on file save (3-5s delay).
+
+### Common Commands
+
+- **Rebuild Containers**: `docker-compose up --build`
+- **View Logs**: `docker-compose logs -f`
+- **Stop**: `docker-compose down`
 
 ---
 
-## API Documentation
+## API Reference
 
-### Authentication Endpoints
+### Auth
 
-#### POST /auth/register
+- `POST /auth/register`: Create account.
+- `POST /auth/login`: Get JWT token.
+- `POST /auth/verify-email`: Verify OTP code.
+- `POST /auth/resend-otp`: Resend verification email.
 
-Register a new user.
+### Secrets
 
-**Request:**
+- `GET /api/secrets`: List all secrets (metadata only).
+- `POST /api/secrets`: Create new secret.
+- `GET /api/secrets/{id}`: Get secret details.
+- `GET /api/secrets/{id}/value`: Get **decrypted** value.
+- `GET /api/secrets/{id}/history`: Get audit trail for a secret.
 
-```json
-{
-  "username": "string",
-  "password": "string"
-}
-```
+### Users
 
-**Response:** `200 OK`
-
-```json
-{
-  "message": "User registered successfully"
-}
-```
-
-#### POST /auth/login
-
-Login and receive JWT token.
-
-**Request:**
-
-```json
-{
-  "username": "string",
-  "password": "string"
-}
-```
-
-**Response:** `200 OK`
-
-```json
-{
-  "accessToken": "eyJhbGciOiJIUzUxMiJ9...",
-  "tokenType": "Bearer"
-}
-```
-
-### Secret Management Endpoints
-
-All endpoints require JWT authentication via `Authorization: Bearer <token>` header.
-
-#### GET /api/secrets
-
-List all secrets for authenticated user.
-
-**Response:** `200 OK`
-
-```json
-[
-  {
-    "id": 1,
-    "title": "Gmail Password",
-    "metadata": { "email": "user@gmail.com" },
-    "tags": ["email", "personal"],
-    "createdAt": "2025-11-22T20:00:00Z",
-    "updatedAt": "2025-11-22T20:00:00Z"
-  }
-]
-```
-
-#### POST /api/secrets
-
-Create a new secret.
-
-**Request:**
-
-```json
-{
-  "title": "string",
-  "value": "string",
-  "metadata": { "key": "value" },
-  "tags": ["tag1", "tag2"]
-}
-```
-
-**Response:** `200 OK` - Returns created secret (value is encrypted)
-
-#### GET /api/secrets/{id}/value
-
-Get decrypted value of a secret.
-
-**Response:** `200 OK`
-
-```json
-{
-  "value": "decrypted_secret_value"
-}
-```
-
-### User Endpoints
-
-#### PUT /api/users/preferences
-
-Update user preferences (theme, etc.).
-
-**Request:**
-
-```json
-{
-  "theme": "dark",
-  "colorScheme": "blue"
-}
-```
-
-#### GET /api/users/export
-
-Export all secrets as CSV.
-
-**Response:** CSV file download
-
----
-
-## Security Features
-
-### Encryption
-
-**Algorithm:** AES-256-GCM
-
-- **Key Size:** 256 bits (32 bytes)
-- **Mode:** Galois/Counter Mode (authenticated encryption)
-- **Key Storage:** Environment variable `ENCRYPTION_KEY`
-
-**Implementation:**
-
-```java
-// Encryption
-Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmSpec);
-byte[] encrypted = cipher.doFinal(plaintext.getBytes());
-
-// Decryption
-cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmSpec);
-byte[] decrypted = cipher.doFinal(encrypted);
-```
-
-### JWT Authentication
-
-**Algorithm:** HS512 (HMAC with SHA-512)
-
-- **Token Expiration:** 1 hour (3600000ms)
-- **Secret Key:** 64+ characters (environment variable)
-- **Header:** `Authorization: Bearer <token>`
-
-**Token Structure:**
-
-```
-eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNjk...
-│                     │                                    │
-Header (Algorithm)    Payload (Claims)                    Signature
-```
-
-### Security Best Practices
-
-1. **Passwords:** Hashed with BCrypt (strength 10)
-2. **CORS:** Configured for localhost:3000 and localhost:8080
-3. **CSRF:** Disabled (stateless JWT authentication)
-4. **Session:** Stateless (no server-side sessions)
-5. **HTTPS:** Recommended for production
-6. **Secrets:** Never logged or exposed in responses
-
-### Environment Variables
-
-```yaml
-# Required for production
-ENCRYPTION_KEY=<32-character-string>
-JWT_SECRET=<64-character-string>
-
-# Database
-SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/appdb
-SPRING_DATASOURCE_USERNAME=user
-SPRING_DATASOURCE_PASSWORD=pass
-```
+- `PUT /api/users/profile`: Update profile.
+- `GET /api/users/export`: Download vault as CSV.
 
 ---
 
 ## Troubleshooting
 
-### Common Issues
+### "Invalid AES Key Length"
 
-#### 1. 403 Forbidden in Swagger
+**Issue**: The backend fails to start with `Invalid AES key length`.
+**Fix**: Ensure `ENCRYPTION_KEY` in `docker-compose.yml` is exactly 32 bytes.
 
-**Cause:** Invalid or expired JWT token
+### "Email Not Sending"
 
-**Solution:**
+**Issue**: Registration succeeds but no email is received.
+**Fix**:
 
-1. Login via `POST /auth/login`
-2. Copy the new `accessToken`
-3. Click "Authorize" in Swagger
-4. Paste token (without "Bearer ")
-5. Try request again
+1. Check backend logs: `docker logs passkind-backend`.
+2. Verify `MAIL_USERNAME` and `MAIL_PASSWORD` in `docker-compose.yml`.
+3. Ensure you are using an **App Password** (not login password) for Gmail.
 
-#### 2. "Invalid AES key length" Error
+### "Connection Refused" (Frontend -> Backend)
 
-**Cause:** `ENCRYPTION_KEY` is not exactly 32 bytes
+**Issue**: Frontend shows network errors.
+**Fix**:
 
-**Solution:**
+1. Check if backend is running: `docker ps`.
+2. Verify `VITE_API_URL` in `docker-compose.yml` matches the backend service URL.
 
-```bash
-# Already fixed in docker-compose.yml
-# If you see this error:
-docker-compose down
-docker-compose up -d
-```
+### Database Persistence
 
-#### 3. Backend Not Starting
+**Note**: Data is stored in the `postgres_data` Docker volume.
 
-**Check logs:**
-
-```bash
-docker logs passkind-backend
-```
-
-**Common fixes:**
-
-```bash
-# Restart backend
-docker-compose restart backend
-
-# Full rebuild
-docker-compose down
-docker-compose up --build
-
-# Clear cache and rebuild
-docker-compose down
-docker-compose build --no-cache
-docker-compose up
-```
-
-#### 4. Frontend Can't Connect to Backend
-
-**Verify:**
-
-1. Backend is running: `docker ps | grep passkind-backend`
-2. Check `VITE_API_URL` in docker-compose.yml
-3. Check CORS configuration in `SecurityConfig.java`
-
-**Fix:**
-
-```bash
-docker-compose restart backend frontend
-```
-
-#### 5. Database Connection Failed
-
-**Check:**
-
-```bash
-docker logs postgres-db
-```
-
-**Fix:**
-
-```bash
-docker-compose restart db
-# Wait 5 seconds
-docker-compose restart backend
-```
-
-#### 6. Port Already in Use
-
-**Find what's using the port:**
-
-```bash
-lsof -i :8080  # Backend
-lsof -i :3000  # Frontend
-lsof -i :5432  # PostgreSQL
-```
-
-**Solution:** Stop the conflicting process or change ports in `docker-compose.yml`
-
-### Debug Mode
-
-**Enable debug logging:**
-
-Add to `application.yml`:
-
-```yaml
-logging:
-  level:
-    com.passkind.backend: DEBUG
-    org.springframework.security: DEBUG
-```
-
-**View detailed logs:**
-
-```bash
-docker logs passkind-backend -f
-```
-
----
-
-## Advanced Topics
-
-### Custom Error Handling
-
-All API errors return consistent format:
-
-```json
-{
-  "timestamp": "2025-11-22T20:00:00",
-  "status": 404,
-  "error": "Not Found",
-  "message": "Secret not found with id: 123",
-  "path": "/api/secrets/123/value"
-}
-```
-
-**Custom Exceptions:**
-
-- `ResourceNotFoundException` → 404
-- `UnauthorizedException` → 401
-- `BadRequestException` → 400
-
-### Audit Logging
-
-All secret operations are logged:
-
-```java
-AuditLog log = new AuditLog();
-log.setUsername(username);
-log.setAction("READ");
-log.setResourceType("SECRET");
-log.setResourceId(secretId);
-log.setDetails("Accessed secret value");
-auditLogRepository.save(log);
-```
-
-**Query audit logs:**
-
-```sql
-SELECT * FROM audit_logs
-WHERE username = 'admin'
-ORDER BY timestamp DESC;
-```
-
-### Database Backup
-
-**Export data:**
-
-```bash
-docker exec postgres-db pg_dump -U user appdb > backup.sql
-```
-
-**Restore data:**
-
-```bash
-docker exec -i postgres-db psql -U user appdb < backup.sql
-```
-
-### Production Deployment
-
-**Checklist:**
-
-- [ ] Change `ENCRYPTION_KEY` to strong random value
-- [ ] Change `JWT_SECRET` to strong random value
-- [ ] Update `SPRING_DATASOURCE_PASSWORD`
-- [ ] Enable HTTPS
-- [ ] Configure proper CORS origins
-- [ ] Set `SPRING_JPA_HIBERNATE_DDL_AUTO=validate`
-- [ ] Add rate limiting
-- [ ] Set up monitoring and logging
-- [ ] Configure backup strategy
-
-### Performance Tuning
-
-**Database Connection Pool:**
-
-```yaml
-spring:
-  datasource:
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-```
-
-**JVM Options:**
-
-```dockerfile
-ENV JAVA_OPTS="-Xmx512m -Xms256m"
-```
-
----
-
-## Project Information
-
-**Version:** 1.0.0  
-**License:** Educational/Personal Use  
-**Author:** passKind Team  
-**Last Updated:** November 2025
-
-**Tech Stack:**
-
-- Spring Boot 3.2.3
-- React 18
-- PostgreSQL 15
-- Docker & Docker Compose
-- JWT (JJWT 0.11.5)
-- Vite 5.4
-- Tailwind CSS 3.4
-
-**Repository Structure:**
-
-```
-pass/
-├── passkind-backend/       # Spring Boot application
-├── passkind-frontend/      # React application
-├── docker-compose.yml      # Container orchestration
-├── README.md               # Quick start guide
-└── DOCUMENTATION.md        # This file
-```
-
----
-
-## Support & Resources
-
-- **Swagger UI:** http://localhost:8080/swagger-ui.html
-- **Database Admin:** http://localhost:8081
-- **Spring Boot Docs:** https://spring.io/projects/spring-boot
-- **React Docs:** https://react.dev
-- **Docker Docs:** https://docs.docker.com
-
----
-
-**End of Documentation**
+- To **reset** the DB: `docker-compose down -v` (Warning: Deletes all data).
+- To **persist** data: `docker-compose down` (without `-v`).

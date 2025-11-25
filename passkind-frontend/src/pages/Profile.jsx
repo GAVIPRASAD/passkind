@@ -23,6 +23,7 @@ import useAuthStore from "../store/authStore";
 import { getFriendlyErrorMessage } from "../utils/errorUtils";
 import { ENDPOINTS } from "../constants/api";
 import toast from "react-hot-toast";
+import Loader from "../components/Loader";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -178,7 +179,7 @@ const Profile = () => {
     return user?.username?.slice(0, 2).toUpperCase() || "U";
   };
 
-  if (isLoading) return <div className="text-center py-10">Loading...</div>;
+  if (isLoading) return <Loader />;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">

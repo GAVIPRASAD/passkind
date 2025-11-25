@@ -20,6 +20,7 @@ import api from "../utils/api";
 import { ENDPOINTS } from "../constants/api";
 import useAuthStore from "../store/authStore";
 import VaultHealth from "../components/VaultHealth";
+import Loader from "../components/Loader";
 
 const Dashboard = () => {
   const { user } = useAuthStore();
@@ -48,11 +49,7 @@ const Dashboard = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
-      </div>
-    );
+    return <Loader />;
   }
 
   return (

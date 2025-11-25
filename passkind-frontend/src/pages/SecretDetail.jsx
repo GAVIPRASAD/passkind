@@ -23,6 +23,7 @@ import SecretHistory from "../components/SecretHistory";
 import { getFriendlyErrorMessage } from "../utils/errorUtils";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import toast from "react-hot-toast";
+import Loader from "../components/Loader";
 
 const SecretDetail = () => {
   const { id } = useParams();
@@ -86,12 +87,7 @@ const SecretDetail = () => {
     navigator.clipboard.writeText(text);
   };
 
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
-      </div>
-    );
+  if (isLoading) return <Loader />;
 
   if (fetchError)
     return (

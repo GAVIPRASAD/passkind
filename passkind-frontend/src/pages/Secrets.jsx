@@ -28,6 +28,7 @@ import api from "../utils/api";
 import { ENDPOINTS } from "../constants/api";
 import EmptySecretsState from "../components/EmptySecretsState";
 import VaultHealth from "../components/VaultHealth";
+import Loader from "../components/Loader";
 
 const Secrets = () => {
   const queryClient = useQueryClient();
@@ -182,15 +183,7 @@ const Secrets = () => {
     show: { opacity: 1, y: 0 },
   };
 
-  if (isLoading)
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
-        <p className="mt-4 text-gray-500 dark:text-gray-400">
-          Loading your vault...
-        </p>
-      </div>
-    );
+  if (isLoading) return <Loader />;
 
   if (error)
     return (

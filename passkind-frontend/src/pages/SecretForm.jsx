@@ -26,6 +26,7 @@ import { ENDPOINTS } from "../constants/api";
 import PasswordGenerator from "../components/PasswordGenerator";
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
 import { getFriendlyErrorMessage } from "../utils/errorUtils";
+import Loader from "../components/Loader";
 
 const SecretForm = () => {
   const { id } = useParams();
@@ -169,12 +170,7 @@ const SecretForm = () => {
     setEditingMetaKey(null);
   };
 
-  if (isEditMode && isLoading)
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
-      </div>
-    );
+  if (isEditMode && isLoading) return <Loader />;
 
   const handlePasswordGenerate = (password) => {
     setFormData({ ...formData, value: password });
